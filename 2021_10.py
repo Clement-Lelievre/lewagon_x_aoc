@@ -119,17 +119,23 @@ closing_chars_points = {')':3, ']':57, '}':1197, '>':25137}
 
 # part 2
 # getting the incomplete words only in a list
+
+
 incomplete = []
 for word in input:
     ordered_closing_characters = []
+    broken = False
     for c in word:
         if c in chars:
             ordered_closing_characters.append(chars[c])
         if c in chars.values() and c != ordered_closing_characters[-1]:
-            incomplete.append(word)
+            broken = True
             break
         if c in chars.values() and c == ordered_closing_characters[-1]:
             ordered_closing_characters = ordered_closing_characters[:-1]
+    if len(ordered_closing_characters) > 0 and broken is False:
+        incomplete.append(word)
+print(len(incomplete))
 
 closing_chars_points = {')':1, ']':2, '}':3, '>':4}
 scores = []
@@ -147,6 +153,6 @@ for word in incomplete:
             ordered_closing_characters.append(chars[c])
         if c in chars.values() and c == ordered_closing_characters[-1]:
             ordered_closing_characters = ordered_closing_characters[:-1]
-    print(ordered_closing_characters[::-1])
+    #print(word, ordered_closing_characters[::-1])
     scores.append(compute_score(ordered_closing_characters[::-1]))
 print(sorted(scores)[int(len(scores)/2)])
