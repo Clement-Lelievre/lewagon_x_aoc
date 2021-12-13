@@ -836,7 +836,6 @@ fold along y=6
 
 dots = [dot for dot in input.split('\n') if dot != '' and not 'fold' in dot]
 dots = [(int(dot[:dot.find(',')]), int(dot[dot.find(',')+1:])) for dot in dots]
-
 # part 1
 # How many dots are visible after completing just the first fold instruction on your transparent paper?
 
@@ -844,18 +843,19 @@ dots = [(int(dot[:dot.find(',')]), int(dot[dot.find(',')+1:])) for dot in dots]
 instruction = [inst for inst in input.split('\n') if 'fold' in inst][0]
 
 # get page dimensions
-x, y = 0,0
+x = 0
+y = 0
 for item in dots:
     if item[0] > x:
         x = item[0]
-    if item[0] > y:
-        y = item[0]
-#print(x,y) x,y = 1310,1310
+    if item[1] > y:
+        y = item[1]
+#print(x,y)# x,y = 1310,1310
 
 # create the dotted page
 page = []
-for i in range(1311):
-    page.append([0]*1311)
+for i in range(y+1):
+    page.append([0]*(x+1))
     
 for dot in dots:
     page[dot[1]][dot[0]] += 1
@@ -867,25 +867,29 @@ def fold_along(value: int, page: list[list[int]], axis: None | str = None) -> li
     if axis == 'x':
         left_half = [[dot for dot in row[:value]] for row in page]
         right_half = [[dot for dot in row[value+1:]][::-1] for row in page]
-        #assert len(right_half[0]) == len(left_half[0]) == l
+        #assert len(right_half[0]) == len(left_half[0]) == value
         folded_page = []
-        for row in range(len(page)):
+        for _ in range(len(page)):
             folded_page.append([0]*(value))
         for i in range(len(page)):
             for j in range(value):
                 folded_page[i][j] += min(left_half[i][j] + right_half[i][j], 1)
         return folded_page
-    if axis == 'y':
+    if axis == 'y': # fold bottom half up
         up_half = [[dot for dot in row] for row in page[:value]]
-        low_half = [[dot for dot in row] for row in page[value+1:]][::-1]
-        # assert len(up_half[0]) == len(low_half[0]) == len(page[])
-        #assert len(up_half) == len(low_half) == l
+        low_half = [[dot for dot in row] for row in page[value+1:2*value+1]][::-1]
         folded_page = []
-        for row in range(value):
+        for _ in range(value):
             folded_page.append([0]*(len(page[0])))
         for i in range(value):
-            for j in range(len(page[0])):
+            for j in range(len(folded_page[0])):
                 folded_page[i][j] += min(low_half[i][j] + up_half[i][j], 1)
+        # below: version where we keep the biggest part (when y is not half the len)
+        # for _ in range(max(len(up_half), len(low_half))):
+        #     folded_page.append([0]*(len(page[0])))
+        # for i in range(min(len(up_half), len(low_half))):
+        #     for j in range(len(folded_page[0])):
+        #         folded_page[i][j] += min(low_half[i][j] + up_half[i][j], 1)
         return folded_page
     return
 
@@ -903,11 +907,14 @@ for inst in instructions:
     axis = 'y' if 'y' in inst else 'x' 
     #print(f'value: {value}, axis: {axis}')
     fp = fold_along(value, fp, axis=axis)
+    #print(f'page dimensions: {len(fp)} rows, {len(fp[0])} cols')
     #print(f'iter n° {instructions.index(inst)+1} done')
     
-for row in fp:
-    for i in range(len(row)):
-        if row[i] == 0:
-            row[i] = ''
+
+
+# for row in fp:
+#     for i in range(len(row)):
+#         if row[i] == 0:
+#             row[i] = ''
 for item in fp:
     print(*item)
