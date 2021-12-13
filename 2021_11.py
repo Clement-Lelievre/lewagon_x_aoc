@@ -39,21 +39,61 @@ def number_flashes(cavern: list[list[int]]) -> int:
    
 def flash(cavern: list[list[int]]) -> list[list[int]]:
     """updates the cavern values after flashes occur"""
-    # sets the octopuses that just flashed to 0
-    [[(2-len(str(octopus)))*octopus for octopus in row] for row in cavern]
-    # 
+    # increments by 1 octopuses adjacent to a flash (incl. diagonally adjacent)
+    for r in range(len(cavern)):
+        for c in range(len(cavern[0])):
+            if cavern[r][c] > 9:
+                try:
+                    cavern[r-1][c] += 1 if cavern[r-1][c] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r+1][c] += 1 if cavern[r+1][c] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r-1][c-1] += 1 if cavern[r-1][c-1] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r-1][c+1] += 1 if cavern[r-1][c+1] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r+1][c+1] += 1 if cavern[r+1][c+1] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r+1][c-1] += 1 if cavern[r+1][c-1] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r][c-1] += 1 if cavern[r][c-1] > 0 else 0
+                except IndexError:
+                    pass
+                try:
+                    cavern[r][c+1] += 1 if cavern[r][c+1] > 0 else 0
+                except IndexError:
+                    pass
+                cavern[r][c] = -1
+    return cavern
     
     
-def step(cavern: list[list[int]]) -> None:
+def step(cavern: list[list[int]]) -> list[list[int]]:
     """performs one step, increments the nb flashes and returns the cavern after the step"""
     global nb_flashes
-    for row in cavern:
-        for octopus in row:
-            octopus += 1
+    for r in range(len(cavern)):
+        for c in range(len(cavern[r])):
+            cavern[r][c] += 1
     nb_flashes += number_flashes(cavern)
     while not no_more_flash(cavern):
         cavern = flash(cavern)
         nb_flashes += number_flashes(cavern)
+    cavern = [[max(0, octopus) for octopus in row] for row in cavern]
+    return cavern
 
+cavern = demo
+for _ in range(100):
+    cavern = step(cavern)
 print(nb_flashes)
     
