@@ -84,20 +84,16 @@ def step(cavern: list[list[int]]) -> list[list[int]]:
     for r in range(len(cavern)):
         for c in range(len(cavern[r])):
             cavern[r][c] += 1
-    #nb_flashes += number_flashes(cavern)
     while not no_more_flash(cavern):
         cavern = flash(cavern)
-        # for i in cavern:
-        #     print(*i)
-        # print('\n')
-        #nb_flashes += number_flashes(cavern)
     nb_flashes += sum([len([octopus for octopus in row if octopus < 0]) for row in cavern])
     cavern = [[max(0, octopus) for octopus in row] for row in cavern]
     return cavern
 
-cavern = input
-for _ in range(100):
-    cavern = step(cavern)
-    #print(cavern)
-print(nb_flashes)
+# cavern = input
+# for _ in range(100):
+#     cavern = step(cavern)
+#     #print(cavern)
+# print(nb_flashes)
     
+# part 2
