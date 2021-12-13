@@ -97,3 +97,13 @@ def step(cavern: list[list[int]]) -> list[list[int]]:
 # print(nb_flashes)
     
 # part 2
+def all_flashed(cavern: list[list[int]]) -> bool:
+    """says whether all octopuses have flashed"""
+    return True if sum([sum(row) for row in cavern]) == 0 else False
+
+cavern = input
+i = 0
+while not all_flashed(cavern):
+    cavern = step(cavern)
+    i += 1
+print(i)
