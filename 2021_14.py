@@ -100,12 +100,12 @@ OK -> C
 OC -> C
 PH -> H
 """
-from collections import defaultdict
-from tqdm import tqdm
+from collections import defaultdict, Counter
+from tqdm import tqdm   
 
 d = defaultdict(str)
 for line in INPUT.splitlines():
-    pair, inserted = line.split('->')
+    pair, inserted = line.split(' -> ')
     d[pair.strip()] = inserted.strip()
 
 def step(template: str, rules: dict) -> str:
@@ -126,4 +126,29 @@ def step(template: str, rules: dict) -> str:
 #     c[letter] = template.count(letter)
 # print(max(c.values()) - min(c.values()))
 
-# part 2
+# part 2 (kudos to Flo Reichel)
+
+# Find count of AB pairs in initial string
+first_element = 'F'
+c = Counter()
+for idx in range(len(TEMPLATE[:-1])):
+    c[TEMPLATE[idx:idx+2]] += 1
+
+# Loop steps
+for i in range(40):
+    # Copy and re-initialise counter
+    cc = c
+    c = Counter()
+    for el in cc.keys():
+        # Increment counter for AX and XB
+        c[el[0] + d[el]] += cc[el]
+        c[d[el] + el[1]] += cc[el]
+
+# Now count the actual elements
+l = Counter()
+# Add back the very first element, since the loop below will only consider the second half of each pair
+l[first_element] = 1
+for el, ct in c.items():
+    l[el[1]] += ct
+
+print(l.most_common()[0][1] - l.most_common()[-1][1])
