@@ -55,12 +55,12 @@ from tqdm import tqdm
 #             c += 1
 # print(c)
 
-x = 20
-pos = 0
-while x >= 0:
-    pos += x
-    x -= 1
-    print(pos)
+# x = 20
+# pos = 0
+# while x >= 0:
+#     pos += x
+#     x -= 1
+#     print(pos)
 
         
 # strat: partir très haut puis tomber à pic (quand x=0) sur l'abscisse x = 130
@@ -99,3 +99,81 @@ while x >= 0:
 #         break
 
 # part 2
+# How many distinct initial velocity values cause the probe to be within the target area after any step?
+# target area: x=81..129, y=-150..-108
+
+from collections import defaultdict
+
+d = defaultdict(list)
+
+X = range(81,130)
+Y = range(-150, -107)
+# X = range(20,31) # test values
+# Y = range(-10, -4) # test values
+
+# let us see which x makes the target area in 1,2,3...etc. steps
+for x in range(1,X[-1]+1):
+    x_test = x
+    step = 1
+    while True:
+        if x_test in X:
+            d[step].append(x)
+        x_test += (x-step) 
+        if (x_test > X[-1]) or (x-step == 0):
+            break
+        step += 1
+#print(d)
+
+# for each n° of steps in our dict's keys, let us see which initial y values are valid
+y_dict = defaultdict(set)
+for nb_steps in d:
+    for y in range(Y[0], 1_000):
+        y_final = y
+        for i in range(1, nb_steps):
+            y_final += y - i
+        if y_final in Y:
+            y_dict[nb_steps].add(y)
+#print(y_dict)
+
+# ans = 0 
+assert d.keys() == y_dict.keys()
+# for step in d:
+#     ans += len(d[step]) * len(y_dict[step])
+#print(ans)
+
+l=[]
+for k in d:
+    for x in d.get(k):
+        for y in y_dict.get(k):
+            l.append((x, y))
+
+# now let us account for free falls
+# find the x initial values that trigger a free fall in the target area
+
+xs = []
+for x in range(1, X[-1]+1):
+    c = x
+    for i in range(1, x):
+        c += x - i
+    if c in X:
+        xs.append(x)
+# print(xs) # 13,14,15
+
+for x in xs:
+    s = set()
+    for y in tqdm(range(Y[0], 200)):
+        for nb_steps in range(x+1, 1_000):
+            y_final = y
+            for i in range(1, nb_steps):
+                y_final += y - i
+            if y_final < Y[0]:
+                break
+            if y_final in Y:
+                s.add(y)
+                l.append((x,y))
+                break
+
+l = set(l)
+print('nb possibilities:', len(l))
+
+    
