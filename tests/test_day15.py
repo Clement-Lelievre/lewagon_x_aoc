@@ -1,6 +1,6 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from day15 import dijkstra, Graph
+from day15 import dijkstra, Graph, make_a_map
 
 EXAMPLE = """1163751742
 1381373672
@@ -35,3 +35,16 @@ for row in range(len(map_example)-1):
 def test_example():
     assert dijkstra(customGraph ,'00')[str(len(map_example)-1) + str(len(map_example[0])-1)] == 40
     
+# tests for part 2
+    
+def test_tiles_nb_rows():
+    assert len(make_a_map()) == 500
+    
+def test_tiles_nb_cols():
+    assert len(make_a_map()[0]) == 500
+    
+def test_value_1():
+    assert make_a_map()[100][0] == 8
+    
+def test_value_2():
+    assert make_a_map()[499][499] == 7
