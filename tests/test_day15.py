@@ -1,17 +1,8 @@
 import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from day15 import dijkstra
+from day15 import dijkstra, customGraph, map_example
 
 
 def test_example():
-    # EXAMPLE = """1163751742
-    # 1381373672
-    # 2136511328
-    # 3694931569
-    # 7463417111
-    # 1319128137
-    # 1359912421
-    # 3125421639
-    # 1293138521
-    # 2311944581"""
-    assert dijkstra() == 40
+    graph = customGraph
+    assert dijkstra(graph ,'00')[str(len(map_example)-1) + str(len(map_example[0])-1)] == 40
