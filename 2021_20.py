@@ -147,6 +147,7 @@ def enhance_image(padded_image: list[str]) -> tuple:
     enhanced_image = [''.join(row) for row in enhanced_image] 
     return nb_lit_pixels,  [elem for elem in enhanced_image if elem != '']   
 
+
 INPUT = [row for row in INPUT.split('\n')]
 enhanced_image = INPUT
 # part 1
@@ -156,6 +157,8 @@ enhanced_image = INPUT
 # print(nb_lit_pixels)
 
 # part 2
+# THERE's A TRICK: because the first character of my algo is a #, all the . surrounding my image
+# will be converted into # and in the next conversion will be converted back to .
 for i in range(50):
     symbol = '.' if i % 2 == 0 else '#'
     img = pad_image(enhanced_image, symbol)
