@@ -108,71 +108,51 @@ EXAMPLE_INPUT = """#..#.
 ..###"""
 
 #########################################################################################################################
-# convert # into 1 and . into 0 in the image and in the algo
-# pad the input image by adding rows and cols of 0s around it
-# 
-# EXAMPLE_algo_binary = ''
-# for char in EXAMPLE_ia_algo:
-#     if char == '#':
-#         EXAMPLE_algo_binary += '1'
-#     else:
-#         EXAMPLE_algo_binary += '0'
 
-PADDED_IMAGE = [row for row in EXAMPLE_INPUT.split('\n')]
-for r in range(len(PADDED_IMAGE)): # padding left and right columns
-    PADDED_IMAGE[r] += '..'
-    PADDED_IMAGE[r] = '..' + PADDED_IMAGE[r]
-PADDED_IMAGE = ['.' * len(PADDED_IMAGE[0])] + PADDED_IMAGE # add top row padded
-PADDED_IMAGE += ['.' * len(PADDED_IMAGE[0])] # add bottom row padded
+def pad_image(image: list[str]) -> list[str]:
+    """adds dots all around the image then returns it, to then process the image"""
+    for r in range(len(image)): # padding left and right columns
+        image[r] += '..'
+        image[r] = '..' + image[r]
+    for _ in range(2):
+        image = ['.' * len(image[0])] + image # add top row padded
+        image += ['.' * len(image[0])] # add bottom row padded
+    return image
 
-nb_lit_pixels = 0
-
-def enhance_image(padded_image: list[str]) -> int:
-    global nb_lit_pixels
-    for r in range(1, len(padded_image)-1):
-        for c in range(1, len(padded_image[0])-1):
-            concat = ''
-            for row in range(r-1, r+2):
-                for col in range(c-1, c+2):
-                    concat += padded_image[row][col]
-            concat_binary = ''
-            for char in concat:
-                if char == '#':
-                    concat_binary += '1'
-                else:
-                    concat_binary += '0'
-            if EXAMPLE_ia_algo[int(concat_binary,2)] == '#':
-                nb_lit_pixels += 1
-    return nb_lit_pixels
-           
-           
 def enhance_image(padded_image: list[str]) -> tuple:
-    global nb_lit_pixels
     enhanced_image = []
+    nb_lit_pixels = 0          
     for _ in range(len(padded_image)):
         enhanced_image.append([])
     for r in range(1, len(padded_image)-1):
         for c in range(1, len(padded_image[0])-1):
-            concat = ''
-            for row in range(r-1, r+2):
-                for col in range(c-1, c+2):
-                    concat += padded_image[row][col]
-            concat_binary = ''
-            for char in concat:
-                if char == '#':
-                    concat_binary += '1'
+            try:
+                concat = ''
+                for row in range(r-1, r+2):
+                    for col in range(c-1, c+2):
+                        concat += padded_image[row][col]
+                concat_binary = ''
+                for char in concat:
+                    if char == '#':
+                        concat_binary += '1'
+                    else:
+                        concat_binary += '0'
+                if EXAMPLE_ia_algo[int(concat_binary,2)] == '#':
+                    nb_lit_pixels += 1
+                    enhanced_image[r] += '#'
                 else:
-                    concat_binary += '0'
-            if EXAMPLE_ia_algo[int(concat_binary,2)] == '#':
-                nb_lit_pixels += 1
-                enhanced_image[r].append('#')
-            else:
-                enhanced_image[r].append('.')
-       
-    return nb_lit_pixels , enhanced_image          
+                    enhanced_image[r] += '.'
+            except IndexError:
+                continue
+    enhanced_image = [''.join(row) for row in enhanced_image] 
+    return nb_lit_pixels,  [elem for elem in enhanced_image if elem != '']   
 
-a = enhance_image(PADDED_IMAGE)[1]
-for row in a:
-    print(*row)
+INPUT = [row for row in EXAMPLE_INPUT.split('\n')]
+
+img = pad_image(INPUT)
+nb_lit_pixels, enhanced_image = enhance_image(img)
+nb_lit_pixels, enhanced_image = enhance_image(pad_image(enhanced_image))
+print(nb_lit_pixels)
+    
         
 
