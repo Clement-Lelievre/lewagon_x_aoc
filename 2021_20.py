@@ -109,14 +109,14 @@ EXAMPLE_INPUT = """#..#.
 
 #########################################################################################################################
 
-def pad_image(image: list[str]) -> list[str]:
+def pad_image(image: list[str], symbol: str) -> list[str]:
     """adds dots all around the image then returns it, to then process the image"""
     for r in range(len(image)): # padding left and right columns
-        image[r] += '..'
-        image[r] = '..' + image[r]
+        image[r] += 2*symbol
+        image[r] = 2*symbol + image[r]
     for _ in range(2):
-        image = ['.' * len(image[0])] + image # add top row padded
-        image += ['.' * len(image[0])] # add bottom row padded
+        image = [symbol * len(image[0])] + image # add top row padded
+        image += [symbol * len(image[0])] # add bottom row padded
     return image
 
 def enhance_image(padded_image: list[str]) -> tuple:
@@ -137,7 +137,7 @@ def enhance_image(padded_image: list[str]) -> tuple:
                         concat_binary += '1'
                     else:
                         concat_binary += '0'
-                if EXAMPLE_ia_algo[int(concat_binary,2)] == '#':
+                if ia_algo[int(concat_binary,2)] == '#':
                     nb_lit_pixels += 1
                     enhanced_image[r] += '#'
                 else:
@@ -147,12 +147,21 @@ def enhance_image(padded_image: list[str]) -> tuple:
     enhanced_image = [''.join(row) for row in enhanced_image] 
     return nb_lit_pixels,  [elem for elem in enhanced_image if elem != '']   
 
-INPUT = [row for row in EXAMPLE_INPUT.split('\n')]
+INPUT = [row for row in INPUT.split('\n')]
+enhanced_image = INPUT
+# part 1
+# nb_lit_pixels, enhanced_image = enhance_image(img)
+# print(enhanced_image)
+# nb_lit_pixels, enhanced_image = enhance_image(pad_image(enhanced_image, '#'))
+# print(nb_lit_pixels)
 
-img = pad_image(INPUT)
-nb_lit_pixels, enhanced_image = enhance_image(img)
-nb_lit_pixels, enhanced_image = enhance_image(pad_image(enhanced_image))
+# part 2
+for i in range(50):
+    symbol = '.' if i % 2 == 0 else '#'
+    img = pad_image(enhanced_image, symbol)
+    nb_lit_pixels, enhanced_image = enhance_image(img)
 print(nb_lit_pixels)
+
     
         
 
