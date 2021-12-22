@@ -437,7 +437,7 @@ def is_valid(cuboid: str) -> bool | tuple:
             return False, False
     return True, data
 
-on = set()
+#on = set()
 
 # for line in tqdm(INPUT.splitlines()):
 #     if (a := is_valid(line))[0]:
@@ -459,3 +459,49 @@ on = set()
 # print(len(on))
 
 # part 2
+ 
+# 1 compute cubes currently on after first instruction
+# come up with a way to compute the overlap 
+
+
+# remarks: instructions MUST be executed in order ; at each iteration I have to retain in memory not only the number of lit cubes, 
+# but also their positions
+
+def new_cubes(current, instruction):
+    data = []
+    for coord in current.split(','):
+        start = int(coord[coord.find('=')+1:coord.find('.')])
+        end = int(coord[::-1][:coord[::-1].find('.')][::-1])
+        data.append((start, end))
+    for coord in instruction.split(','):
+        start = int(coord[coord.find('=')+1:coord.find('.')])
+        end = int(coord[::-1][:coord[::-1].find('.')][::-1])
+        data.append((start, end))
+    new = set()
+    x_b, y_b, z_b, x_a, y_a, z_a = tuple(data) # x before, x after etc.
+    range_xb = range(x_b[0], x_b[1]+1)
+    range_xa = range(x_a[0], x_a[1]+1)
+    range_yb = range(y_b[0], y_b[1]+1)
+    range_ya = range(y_a[0], y_a[1]+1)
+    range_zb = range(z_b[0], z_b[1]+1)
+    range_za = range(z_a[0], z_a[1]+1)
+    for x in range_xa:
+        if not x in range_xb:
+            for y in range_ya:
+                for z in range_za:
+                    new.add('x'+str(x)+'y'+str(y)+'z'+str(z) )
+    for y in range_ya:
+        if not y in range_yb:
+            for x in range_xa:
+                for z in range_za:
+                    new.add('x'+str(x)+'y'+str(y)+'z'+str(z) )
+    for z in range_za:
+        if not z in range_zb:
+            for y in range_ya:
+                for x in range_xa:
+                    new.add('x'+str(x)+'y'+str(y)+'z'+str(z) ) 
+    return len(new) 
+
+print(new_cubes('on x=22803..41931,y=-7230..7249,z=-81263..-63685','on x=62128..86492,y=2594..15499,z=-24195..-10571'))
+# on x=10..12,y=10..12,z=10..12
+# on x=11..13,y=11..13,z=11..13
