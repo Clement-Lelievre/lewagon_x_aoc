@@ -100,7 +100,7 @@ INPUT="""74679231611998539751638789649558158819916426769389124514479197926837286
 2798217219738855755749522266326446838229933717751932193589926835391162658998953169476898614839119719"""
 
 # from itertools import permutations
-# from tqdm import tqdm
+from tqdm import tqdm
 
 # map = INPUT.split('\n')
 # moves = ['d'+str(_) for _ in range(1,100)] + ['b'+str(_) for _ in range(1,100)]
@@ -217,6 +217,9 @@ INPUT="""74679231611998539751638789649558158819916426769389124514479197926837286
 # the above works but is inefficient and I cannot view the answer as the algo takes too long to run
 # so let us implement the Dijkstra algorithm through a class
 from collections import defaultdict
+import ezgmail
+
+ezgmail.init()
 
 #Initializing the Graph Class
 class Graph:
@@ -263,10 +266,77 @@ def dijkstra(graph: Graph, initial) -> set | int:
     return visited#, path
 
 
+# # now let us implement the above Graph class and Dijkstra algorithm
+# customGraph = Graph()
+
+# map = [[int(char) for char in row] for row in INPUT.split('\n')]
+
+# # adding nodes of the graph
+# for row in range(len(map)):
+#     for col in range(len(map[0])):
+#         customGraph.addNode('r' + str(row)+'c'+str(col))
+
+# # adding edges: moves towards the right   
+# for row in range(len(map)):
+#     for col in range(len(map[0])-1):
+#             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row)+'c'+str(col+1) , map[row][col+1])
+     
+# # adding edges: moves towards the bottom  
+# for row in range(len(map)-1):
+#     for col in range(len(map[0])):
+#             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row+1)+'c'+str(col) , map[row+1][col])
+            
+# # adding edges: moves up (reading the problem statement, diagnoal moves are forbidden, but not left and down moves.
+# # these moves are counter-intuitive, but why not?)
+# for row in range(1, len(map)):
+#     for col in range(len(map[0])):
+#             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row-1)+'c'+str(col) , map[row-1][col])
+            
+# # adding edges: moves left
+# for row in range(len(map)):
+#     for col in range(1, len(map[0])):
+#             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row)+'c'+str(col-1) , map[row][col-1])
+
+# print(dijkstra(customGraph, "r0c0")['r'+str(len(map)-1)+'c'+str(len(map[0])-1)])  
+
+############################################## part 2 ################################################################# 
+
+
+# 1 create the new map
+# 2 run the Dijkstra algo on it
+
+
+part1_map = [[int(char) for char in row] for row in INPUT.split('\n')]
+
+def generate_tile_from(original_tile: list[list[int]], offset: int) -> list[list[int]]:
+    """A utility function that, as per the instructions, creates and returns a tile with the given offset value"""       
+    return [[(value + offset) if (value + offset) <= 9 else (value + offset) -9  for value in row] for row in original_tile]
+
+def make_a_row(original_map : list[list[int]], offset_left: int):
+    """creates one row of the new, 5x5 tiles map    
+    Parameters
+    offset_left: the offset value of the left-most tile of the row, compared to the top left tile of the entire map"""
+    left_tile = generate_tile_from(original_map, offset_left)
+    row = []
+    one = generate_tile_from(left_tile, 1)
+    two = generate_tile_from(left_tile, 2)
+    three = generate_tile_from(left_tile, 3)
+    four = generate_tile_from(left_tile, 4)
+    for i in range(len(left_tile)):
+        row.append(left_tile[i] + one[i]+  two[i]+three[i]+four[i])
+    return row
+        
+def make_a_map(original_map: list[list[int]]) -> list[list[int]]:
+    """creates the entire 5x5 tiles map"""
+    map = []
+    for i in range(5):
+        map += make_a_row(original_map , i) 
+    return map
+         
 # now let us implement the above Graph class and Dijkstra algorithm
 customGraph = Graph()
-map = [[int(char) for char in row] for row in INPUT.split('\n')]
-
+map = make_a_map(part1_map)
+#print(map)
 # adding nodes of the graph
 for row in range(len(map)):
     for col in range(len(map[0])):
@@ -282,7 +352,7 @@ for row in range(len(map)-1):
     for col in range(len(map[0])):
             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row+1)+'c'+str(col) , map[row+1][col])
             
-# adding edges: moves up (reading the problem statement, diagnoal moves are forbidden, but not left and down moves.
+# adding edges: moves up (reading the problem statement, diagonal moves are forbidden, but not left and down moves.
 # these moves are counter-intuitive, but why not?)
 for row in range(1, len(map)):
     for col in range(len(map[0])):
@@ -293,4 +363,7 @@ for row in range(len(map)):
     for col in range(1, len(map[0])):
             customGraph.addEdge('r'+str(row)+'c'+str(col), 'r'+str(row)+'c'+str(col-1) , map[row][col-1])
 
-print(dijkstra(customGraph, "r0c0")['r99c99'])  
+answer = dijkstra(customGraph, "r0c0")['r' + str(len(map)-1) + 'c' + str(len(map[0])-1)]
+print(f'the answer is {str(answer)}')
+ezgmail.send('clement.lelievre90@gmail.com', 'AOC Day 15 part 2 : answer', str(answer))
+
