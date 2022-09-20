@@ -1046,7 +1046,7 @@ operator_dict = {
     "==": eq,
     "!=": ne,
 }  # map string operators to functions
-
+max_ever = 0 # keep track of the max value ever, it starts at 0
 for features in instruction_features:
     (
         register_action,
@@ -1063,5 +1063,7 @@ for features in instruction_features:
         registers_dict[register_action] = operator_dict[action](
             registers_dict[register_action], int(action_value)
         )
+        max_ever = max(max_ever, max(registers_dict.values()))
 
-print(max(registers_dict.values()))
+print(f'part 1 : {max(registers_dict.values())}, part 2 : {max_ever}')
+
