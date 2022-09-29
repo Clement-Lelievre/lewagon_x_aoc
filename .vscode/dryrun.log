@@ -1,0 +1,5 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/xlpy/code/Clement-Lelievre/advent_of_code/lewagon_x_aoc'
+pytest --verbose
+make: Leaving directory '/home/xlpy/code/Clement-Lelievre/advent_of_code/lewagon_x_aoc'
+ 
