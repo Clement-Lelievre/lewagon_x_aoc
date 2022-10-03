@@ -1022,3 +1022,22 @@ def is_valid(row: str) -> bool:
 
 
 print(sum(is_valid(row) for row in inp))
+# part 2
+def is_valid_part2(row: str) -> bool:
+    """Says whether word is valid as per the actual `Official Toboggan Corporate Policy`
+
+    Args:
+        row (str): the instructions
+
+    Returns:
+        bool: whether valid or not
+    """
+    idx_1, idx_2 = (
+        int((s := nb_range_pat.search(row)).group(1)) - 1,
+        int(s.group(2)) - 1,
+    )
+    letter = (rs := row.split())[1][0]
+    return (rs[-1][idx_1] == letter) ^ (rs[-1][idx_2] == letter)
+
+
+print(sum(is_valid_part2(row) for row in inp))
