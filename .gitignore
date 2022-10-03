@@ -1,0 +1,48 @@
+# Windows stuff
+*:Zone.Identifier
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+# Jupyter notebooks
+.ipynb_checkpoints
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+# heavy data files
+*.pdf
+*.xls*
+*.csv
+# credentials
+google-translate-creds.json
+.env
+#virtual environment
+venv/
+# selenium driver
+geckodriver.exe
+# notes and ideas
+notes_calls/
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+# IPython
+profile_default/
+ipython_config.py
