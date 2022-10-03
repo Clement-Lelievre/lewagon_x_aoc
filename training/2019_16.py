@@ -36,23 +36,48 @@ INPUT='''59715091976660977847686180472178988274868874248912891927881770506416128
 # for _ in range(2):
 #     print(list(a))
 
-# part 2 ####################################################################################################""
-output = np.array(list(map(int, INPUT*10_000)))
-l = output.shape[0]
 
-for i in tqdm(range(100)): # nb of phases
-    new_seq = ''
-    for _ in tqdm(range(l)): # in each phase, one iteration per sequence character
-        z, o = np.zeros(shape=(_+1,)), np.ones(shape=(_+1,))
-        base_pat = np.hstack((z,o,z,-1*o))
-        pat = np.tile(base_pat, l // base_pat.shape[0] + 1)[1:l+1]
-        weighted_sum = pat @ output
-        new_seq += str(weighted_sum)[-3]
-    output = np.array(list(map(int, new_seq)))
+# part 2 ####################################################################################################
+# Let's use Numpy to fasten things up
+# so the first seven digits of my initial input represent the message offset and are: 5971509, meaning
+# that the relevant digits in the final output list are 5971110 through 5971117 included
+# it seems I can just compute the digits for each phase at those indices and below, because it'll only be 1s
+# output = np.array(list(map(int, INPUT*10_000)))
+# l = output.shape[0]
+# # # l =100
+# # # # # notice how in the above method there was redundant work: creating the pattern rows over and over again
+# # # # # this time, let us make once and for all a 650000*650000 pattern matrix
+# relevant_input = output[int(INPUT[:7]):]
+# pattern_matrix = []
+# rl = len(relevant_input)
+# # z, o = np.zeros(shape=(l,)), np.ones(shape=(l,))
+# for i in tqdm(range(int(INPUT[:7]), l)):
+#     zeros, ones = np.zeros(shape=(i,)), np.ones(shape=(l - i,))
+#     base_pat = np.hstack((zeros,ones))
+#     pattern_matrix.append(base_pat)
+# pattern_matrix = np.array(pattern_matrix)
+
+
+
+# for i in tqdm(range(2)): # nb of phases
+#     new_seq = ''
+#     print(pattern_matrix @ relevant_input)
+    
 
         
-print(output)   
-str_output = ''.join(map(str,output))
-offset = int(str_output[:7])
-print(str_output[offset+1:offset+9])
+# print(output)   
+# str_output = ''.join(map(str,output))
+# offset = int(str_output[:7])
+# print(str_output[offset+1:offset+9])
 
+# borrowed from https://github.com/Dementophobia/advent-of-code-2019/blob/master/2019_16_p2.py after giving up
+def solve():
+    offset   = int(INPUT[:7])
+    elements = [int(num) for _ in range(10_000) for num in INPUT][offset:]
+    print(len(elements), offset, len(INPUT)-offset)
+    for _ in range(100):
+        for i in range(-2, -len(elements)-1, -1):
+            elements[i] = (elements[i] + elements[i+1]) % 10
+    return "".join(str(x) for x in elements[:8])
+
+print(solve())
