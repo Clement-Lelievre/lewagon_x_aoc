@@ -23,8 +23,7 @@ rooms_positions = set()
 all_paths_without_detours = list(path.replace('\n','') for path in generate(path_no_detours))
 paths_rooms = {path:[] for path in all_paths_without_detours}
 for path in tqdm(all_paths_without_detours):#, total=count(path_no_detours)):
-    # ...  even this (passing) is too costly when using all possible detours!
-    path = path.replace('\n','')
+    # ...  even this (passing) is too costly when using all possible detours! (i.e. the full input pattern)
     current_room = [0,0]
     for char in path:
         if char == 'E':
@@ -35,22 +34,26 @@ for path in tqdm(all_paths_without_detours):#, total=count(path_no_detours)):
             current_room[1] += 1
         elif char == 'S':
             current_room[1] -= 1
-        else:
-            raise Exception(f'odd character in path: {char=}')
+        # else:
+        #     raise Exception(f'odd character in path: {char=}')
         rooms_positions.add(tuple(current_room))
         paths_rooms[path].append(tuple(current_room))
   
 shortest_distance_to_rooms = {}
-for room in tqdm(rooms_positions):
+for room in tqdm(rooms_positions): # takes about 5' to run
     min_dist = 10**9 # arbitrarily large upper bound
-    for path in [p for p in all_paths_without_detours if room in paths_rooms[p]]:
-        if (d := paths_rooms[path].index(room)) < min_dist:
-            min_dist = d + 1  # +1 because the door index is 0-indexed  
+    for path in all_paths_without_detours:
+        try:
+            if (d := paths_rooms[path].index(room)) < min_dist:
+                min_dist = d + 1  # +1 because the door index is 0-indexed  
+        except ValueError: # this try/except approach intuitively seems faster than checking membership then if any, index, which does redundant work
+            pass
     shortest_distance_to_rooms[room] = min_dist  
     
 print(max(shortest_distance_to_rooms.values())) # gives 3464; strangely the right answer is 3465 and I don't understand why
                 
 # part 2
 
-print(len([v for v in shortest_distance_to_rooms.values() if v >= 1_000])) # 7391 => this is a wrong answer, don't know why
+print(len([v for v in shortest_distance_to_rooms.values() if v >= 1_000])) # 7391 => this is a wrong answer, probably because I'm
+# avoiding detours for the sake of performance, and I therefore lack some rooms that are inside the detours
 
