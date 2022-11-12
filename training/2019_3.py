@@ -77,4 +77,4 @@ def build_wire_track_timing(instructions: str) -> dict:
 
 w1, w2 = build_wire_track_timing(W1), build_wire_track_timing(W2)
 combined_nb_steps = lambda coord, start=0: start + w1[coord] + w2[coord]
-print(min(map(combined_nb_steps, [k for k in w1 if k in w2])))
+print(min(map(combined_nb_steps, w1.keys() & w2.keys())))
