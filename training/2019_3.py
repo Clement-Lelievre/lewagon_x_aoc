@@ -40,38 +40,28 @@ manhattan = lambda coord: abs(coord[0]) + abs(coord[1])
 print(min(map(manhattan, w1.intersection(w2))))
 
 # part 2
-def build_wire_track_timing(instructions: str) -> dict:
-    # clearly, this can be refactored to save some repeated code
+def build_wire_track_timing(instructions: str) -> dict[tuple, int]:
+    """Builds the path and tracks the steps
+
+    Args:
+        instructions (str): the set of instructions as provided in the challenge
+
+    Returns:
+        dict[tuple, int]: the description of the path
+    """
+
     init = [0, 0]
     path = {}
     nb_steps = 0
     for inst in tqdm(instructions.split(",")):
         direction = inst[0]
         distance = int(inst[1:])
-        if direction == "R":
-            for _ in range(distance):
-                init = init.copy()
-                init[0] += 1
-                nb_steps += 1
-                path[t] = nb_steps if not (t := tuple(init)) in path else path[t]
-        elif direction == "L":
-            for _ in range(distance):
-                init = init.copy()
-                init[0] -= 1
-                nb_steps += 1
-                path[t] = nb_steps if not (t := tuple(init)) in path else path[t]
-        elif direction == "D":
-            for _ in range(distance):
-                init = init.copy()
-                init[1] -= 1
-                nb_steps += 1
-                path[t] = nb_steps if not (t := tuple(init)) in path else path[t]
-        else:
-            for _ in range(distance):
-                init = init.copy()
-                init[1] += 1
-                nb_steps += 1
-                path[t] = nb_steps if not (t := tuple(init)) in path else path[t]
+        for _ in range(distance):
+            init = init.copy()  # otherwise the change occurs inplace
+            init[0] += 1 if direction == "R" else (-1 if direction == "L" else 0)
+            init[1] += 1 if direction == "U" else (-1 if direction == "D" else 0)
+            nb_steps += 1
+            path.setdefault(tuple(init), nb_steps)
     return path
 
 
