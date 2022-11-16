@@ -1,6 +1,6 @@
 import re
 
-changes = '''Al => ThF
+REPLACEMENTS = '''Al => ThF
 Al => ThRnFAr
 B => BCa
 B => TiB
@@ -48,8 +48,8 @@ molecule = 'CRnSiRnCaPTiMgYCaPTiRnFArSiThFArCaSiThSiThPBCaCaSiRnSiRnTiTiMgArPBCa
 
 possible_molecules = set()
 pat = re.compile(r'(\w+)\s=>\s(\w+)')
-for mol in changes.splitlines():
-    before, after = pat.search(mol).group(1), pat.search(mol).group(2)
+for mol in REPLACEMENTS.splitlines():
+    before, after = (res := pat.search(mol)).group(1), res.group(2)
     for e in re.finditer(before, molecule):
         span = e.span()
         possible_molecules.add(molecule[:span[0]] + after + molecule[span[1]:])
