@@ -1,4 +1,6 @@
-input = """
+import re
+
+INPUT = """
 rthkunfaakmwmush
 qxlnvjguikqcyfzt
 sleaoasjspnjctqt
@@ -1006,26 +1008,60 @@ oiuroieurpyejuvm
 # It does not contain the strings ab, cd, pq, or xy, even if they are part of one of the other requirements.
 # It contains at least one letter that appears twice in a row, like xx, abcdde (dd), or aabbccdd (aa, bb, cc, or dd).
 
-input = input.split('\n')
-def is_nice(word: str) -> int:
+words = INPUT.strip().splitlines()
+VOWELS = ["a", "e", "i", "o", "u"]
+FORBIDDEN_STRINGS = ["ab", "cd", "pq", "xy"]
+
+
+def is_nice_part1(word: str) -> int:
     # step 1
-    vowels = ['a','e','i','o','u']
-    if sum([word.count(vowel) for vowel in vowels]) < 3:
+    if sum([word.count(vowel) for vowel in VOWELS]) < 3:
         return 0
     # step 2
-    forbidden_strings = ['ab', 'cd', 'pq', 'xy']
-    for fs in forbidden_strings:
+    for fs in FORBIDDEN_STRINGS:
         if fs in word:
             return 0
     # step 3
     for letter in set(word):
-        if 2*letter in word:
+        if 2 * letter in word:
             return 1
     return 0
 
-c = 0
-for word in input:
-    c += is_nice(word)
-print(c)
-        
 
+print(sum(map(is_nice_part1, words)))
+
+# part 2
+# Now, a nice string is one with all of the following properties:
+
+# It contains a pair of any two letters that appears at least twice in the string without overlapping,
+# like xyxy (xy) or aabcdefgaa (aa), but not like aaa (aa, but it overlaps).
+# It contains at least one letter which repeats with exactly one letter between them, like xyx, abcdefeghi (efe), or even aaa.
+
+repeat_pat = re.compile(r"([a-z]).\1")
+two_identical_letter_pat = re.compile(
+    r"""([a-z])\1 # any letter repeated twice
+                                      [^\1]+ # at least 1 letter different from the previous (to prevent overlapping)
+                                      \1\1 # the same letter as on step 1, repeated twice again
+                                      """,
+    re.VERBOSE,
+)
+two_different_letter_pat = re.compile(
+    r"""([a-z])([^\1]) # any letter then any different letter
+                                      .*? # anything or nothing
+                                      \1\2 # the same 2-letter sequence as on step 1
+                                      """,
+    re.VERBOSE,
+)
+
+
+def is_nice_part2(word: str) -> bool:
+    return bool(
+        repeat_pat.search(word)
+        and (
+            two_different_letter_pat.search(word)
+            or two_identical_letter_pat.search(word)
+        )
+    )
+
+
+print(sum(map(is_nice_part2, words)))
