@@ -1,4 +1,4 @@
-input = """
+INPUT = """
 umdryebvlapkozostecnihjexg
 amdryebalapkozfstwcnrhjqxg
 umdcyebvlapaozfstwcnihjqgg
@@ -251,12 +251,13 @@ umerycbvlapkozfstwcnihjqxh
 umdkykbvlapjozfstwcnihjqxg
 """
 from tqdm import tqdm
+from itertools import combinations
 
-input = [word for word in input.split('\n') if word != '']
+inp = [word for word in INPUT.splitlines() if word]
 two_count = 0
 three_count = 0
 
-for word in tqdm(input):
+for word in tqdm(inp):
     s = set(word)
     for letter in s:
         if word.count(letter) == 2:
@@ -266,4 +267,30 @@ for word in tqdm(input):
         if word.count(letter) == 3:
             three_count += 1
             break
-print(two_count*three_count)
+print(two_count * three_count)
+
+# part 2
+
+
+def differ_by_exactly_one_char(str1: str, str2: str) -> bool:
+    """returns whether str1 and str2 differ by exactly 1 character, at the same position
+    ex: differ_by_exactly_one_char('abc', 'aaa') -> False
+        differ_by_exactly_one_char('abc', 'aac') -> True
+    """
+    # if len(str1) != len(str2): return False # commented out to gain time as all the inputs are the same length
+    nb_diffs = sum(str1[i] != str2[i] for i in range(len(str1)))
+    return False if nb_diffs != 1 else True
+
+
+def find_diff_letter(str1: str, str2: str):
+    for i in range(len(str1)):
+        if str1[i] != str2[i]:
+            return str1[:i] + str2[i + 1 :]
+
+
+for str1, str2 in combinations(inp, 2):
+    if differ_by_exactly_one_char(str1, str2):
+        print(find_diff_letter(str1, str2))
+        break
+
+# there was no need for optimization as this ran in under a second
