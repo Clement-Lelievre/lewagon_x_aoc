@@ -140,4 +140,23 @@ region_size = sum(
 )
 print(region_size)
 
-# I could optimize this in several ways, e.g. usoing a while loop instead and breaking when the sum of distances is > max_dist, but this wasn't necessary for the input I was given
+# part 2 : alternate solution
+# it isn't necessary as the above runs in 2sec, but : optimization idea: using a while loop instead of the above, and breaking whenever the sum of distances is > max_dist
+coords = list(coords)
+nb_coords = len(coords)
+region_size = 0
+for x in tqdm(range(max_row + 1)):
+    for y in range(max_col + 1):
+        s = 0
+        i = 0
+        while i < nb_coords:
+            s += manhattan_distance((y, x), coords[i])
+            i += 1
+            if s >= max_dist:
+                break
+        else:
+            region_size += 1
+print(region_size)
+
+# yields the correct result too, but turns out to be slower than the above approach: around 80 iterations/sec vs 130 for the above snippet, c. 40% as slow!
+# would this still hold against larger inputs sizes?
