@@ -103,12 +103,6 @@ INPUT = """
 200011111022120322143342040443334552235435211511231451452222252222113214233002413424112001211130112
 202000213331311222142203242110321123234552545321425122145424451321304200332123042013120323022211012
 """
-# INPUT = """
-# 30373
-# 25512
-# 65332
-# 33549
-# 35390"""
 
 grid = np.array([list(map(int, row)) for row in INPUT.splitlines() if row.strip()])
 nb_rows, nb_cols = grid.shape
@@ -140,7 +134,7 @@ def compute_viewing_distance(arr: np.array, current_tree_height: int) -> int:
     """Computes and returns the nb of trees one can see from a given tree, under the conditions described in the challenge
 
     Args:
-        arr (np.array): a 1-dimensional numpy array; it's like the corridor that you see through from the caban (in any direction)
+        arr (np.array): a 1-dimensional numpy array; it's like the corridor that you see through from the treehouse (in any direction)
         current_tree_height (int): the height of the tree currently under consideration
 
     Returns:
@@ -154,15 +148,13 @@ def compute_viewing_distance(arr: np.array, current_tree_height: int) -> int:
     if first_taller:
         arr = arr[
             : first_taller + 1
-        ]  # shorten the array: stop at the first tree that's higher than the curent tree, if any
+        ]  # shorten the array: stop at the first tree that's >= current tree, if any
         arr[-1] = current_tree_height
     # check for subsequence monotony in the array
-    return sum((arr[i] >= np.max(arr[:i])) for i in range(1, len(arr))) + 1
+    return arr.size
 
 
-# print(compute_viewing_distance(np.array([4,1,4,3,3,5,5,7]), 7)); exit()
-
-
+# unit tests
 # example 1 from the text
 assert compute_viewing_distance(np.array([1, 2]), 5) == 2
 assert compute_viewing_distance(np.array([3, 5, 3]), 5) == 2
@@ -176,62 +168,29 @@ assert compute_viewing_distance(np.array([3, 3]), 5) == 2
 assert compute_viewing_distance(np.array([3]), 5) == 1
 assert compute_viewing_distance(np.array([4, 9]), 5) == 2
 
-# other examples, including edge cases
-assert compute_viewing_distance(np.array([1, 1, 1, 1, 0]), 1) == 1
-assert compute_viewing_distance(np.array([3, 3]), 5) == 2
-assert compute_viewing_distance(np.array([3, 3]), 0) == 1
-assert compute_viewing_distance(np.array([3, 3]), 4) == 2
-assert compute_viewing_distance(np.array([3, 3]), 3) == 1
-
-assert compute_viewing_distance(np.array([9, 3, 3]), 4) == 1
-assert compute_viewing_distance(np.array([9, 9, 9, 9, 9]), 9) == 1
-assert compute_viewing_distance(np.array([0, 0, 1, 1]), 0) == 1
-
-# increasing, decreasing then increasing again
-assert compute_viewing_distance(np.array([0, 3, 4, 4, 5, 7, 7, 8, 1, 2]), 7) == 6
-assert (
-    compute_viewing_distance(np.array([0, 0, 1, 1, 1, 2, 3, 3, 3, 4, 4, 5, 5]), 5) == 12
-)
-# decreasing then increasing
-assert compute_viewing_distance(np.array([4, 1, 4, 3, 3, 5, 5, 7]), 7) == 5
-assert compute_viewing_distance(np.array([3, 1, 2, 3]), 5) == 2
-assert compute_viewing_distance(np.array([3, 1, 2, 3]), 0) == 1
-assert compute_viewing_distance(np.array([9, 7, 1, 2, 3]), 5) == 1
-
-assert compute_viewing_distance(np.array([3, 3, 3, 4, 4, 5, 9]), 5) == 6
-assert compute_viewing_distance(np.array([0, 0, 1, 3, 8, 5]), 5) == 5
-assert compute_viewing_distance(np.array([5, 0, 1, 3, 8, 5]), 5) == 1
-assert compute_viewing_distance(np.array([9, 0, 1, 3, 8, 5]), 5) == 1
-assert compute_viewing_distance(np.array([0, 0, 1, 3, 4, 5, 5, 6, 7, 50]), 5) == 6
-assert compute_viewing_distance(np.array([0]), 5) == 1
-assert compute_viewing_distance(np.array([9]), 5) == 1
-assert compute_viewing_distance(np.array([9, 0]), 5) == 1
-
-
 prod_func = lambda x, y, b=0: x * y + b
 scenic_score = 0
+
+
+nb_rows, nb_cols = grid.shape
+
 for row in range(1, nb_rows - 1):  # no need to consider edges as their score is 0
     for col in range(1, nb_cols - 1):  # no need to consider edges as their score is 0
         current_tree_height = grid[row, col]
-        # print(f"{row=}, {col=}, {current_tree_height=}")
-        up_arr = grid[:row, col][::-1]  # need to reverse
-        down_arr = grid[row + 1 :, col]
-        right_arr = grid[row, col + 1 :]
-        left_arr = grid[row, :col][::-1]  # need to reverse
+        arrays_view = [
+            grid[:row, col][::-1],  # up
+            grid[row + 1 :, col],  # down
+            grid[row, col + 1 :],  # right
+            grid[row, :col][::-1],  # left
+        ]
         tree_scenic_score = reduce(
             prod_func,
             starmap(
                 compute_viewing_distance,
-                [
-                    (up_arr, current_tree_height),
-                    (down_arr, current_tree_height),
-                    (right_arr, current_tree_height),
-                    (left_arr, current_tree_height),
-                ],
+                [(arr, current_tree_height) for arr in arrays_view],
             ),
         )
         if tree_scenic_score > scenic_score:
             scenic_score = tree_scenic_score
-            print(f"{row=}, {col=}, {scenic_score=}\n")
 
 print(f"part 2 : {scenic_score=}")
