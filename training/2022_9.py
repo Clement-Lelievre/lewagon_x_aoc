@@ -2008,7 +2008,8 @@ tail_spots = set()
 head_pos = [0, 0]
 tail_pos = [0, 0]
 tail_spots.add(tuple(tail_pos))
-# it seems to me that I should take all unique spots the head visits, minus those when the head turns 
+# it seems to me that I should take all unique spots the head visits, minus
+# those when the head turns
 # (because then, the tail follows diagonally)
 
 
@@ -2029,7 +2030,9 @@ def are_touching(head_pos: list[int], tail_pos: list[int]) -> bool:
     )
 
 
-def simulate_part1(move: list[str], verbose: bool = False) -> None: # should be refactored as there's some redundant code
+def simulate_part1(
+    move: list[str], verbose: bool = False
+) -> None:  # should be refactored as there's some redundant code
     global head_pos, tail_pos
     direction, distance = move[0], int(move[1])
     match direction:
@@ -2075,7 +2078,7 @@ def simulate_part1(move: list[str], verbose: bool = False) -> None: # should be 
 # it seems I need to apply the above, but to knots 8 and 9, and so to 8 and 7, 7 and 6 etc. till the head that drives every knot
 tail_spots = set()
 # define the 10 knots, from k0 (head) to k9 (tail)
-init_pos = [0,0]
+init_pos = [0, 0]
 k0_pos, k1_pos, k2_pos, k3_pos, k4_pos, k5_pos, k6_pos, k7_pos, k8_pos, k9_pos = (
     deepcopy(init_pos),
     deepcopy(init_pos),
@@ -2119,7 +2122,8 @@ def no_axis_in_common(head_pos: list[int], tail_pos: list[int]) -> bool:
     Returns:
         bool: whether knot n and n-1 (head and tail in part 1) share at least one axis
     """
-    return True if head_pos[0] != tail_pos[0] and head_pos[1] != tail_pos[1] else False    
+    return True if head_pos[0] != tail_pos[0] and head_pos[1] != tail_pos[1] else False
+
 
 def simulate_head_part2(direction: str, verbose: bool = False) -> None:
     head_pos, tail_pos = k0_pos, k1_pos
@@ -2147,7 +2151,9 @@ def simulate_head_part2(direction: str, verbose: bool = False) -> None:
             if not are_touching(head_pos, tail_pos):
                 tail_pos[0], tail_pos[1] = head_pos[0], head_pos[1] - 1
                 if verbose:
-                    print(tail_pos) 
+                    print(tail_pos)
+
+
 # adapt the above 'simulate' function to be able to handle any of the 8 processes that do not include the head (aka process #0)
 
 
@@ -2155,32 +2161,33 @@ def simulate_knot_part2(process_id: int) -> None:
     global k1_pos, k2_pos, k3_pos, k4_pos, k5_pos, k6_pos, k7_pos, k8_pos, k9_pos, process_variable_mapping
     head_pos, tail_pos = process_variable_mapping[process_id]
     # make tail_pos move according to how head_pos moved (straight line vs diagonally)
-    if not are_touching(head_pos, tail_pos): 
+    if not are_touching(head_pos, tail_pos):
         if no_axis_in_common(head_pos, tail_pos):
             col_dist = abs(head_pos[1] - tail_pos[1])
-            row_dist =  abs(head_pos[0] - tail_pos[0])
+            row_dist = abs(head_pos[0] - tail_pos[0])
             if row_dist > 1 and col_dist > 1:
                 tail_pos[0] = tail_pos[0] + (1 if head_pos[0] > tail_pos[0] else -1)
-                tail_pos[1] = tail_pos[1]  + (1 if head_pos[1] > tail_pos[1] else -1)
+                tail_pos[1] = tail_pos[1] + (1 if head_pos[1] > tail_pos[1] else -1)
             elif row_dist > 1:
                 tail_pos[1] = head_pos[1]
                 tail_pos[0] = tail_pos[0] + (1 if head_pos[0] > tail_pos[0] else -1)
             elif col_dist > 1:
                 tail_pos[0] = head_pos[0]
-                tail_pos[1] = tail_pos[1]  + (1 if head_pos[1] > tail_pos[1] else -1) 
+                tail_pos[1] = tail_pos[1] + (1 if head_pos[1] > tail_pos[1] else -1)
         else:
             if head_pos[0] == tail_pos[0]:
-                tail_pos[1] = tail_pos[1]  + (1 if head_pos[1] > tail_pos[1] else -1)
+                tail_pos[1] = tail_pos[1] + (1 if head_pos[1] > tail_pos[1] else -1)
             elif head_pos[1] == tail_pos[1]:
                 tail_pos[0] = tail_pos[0] + (1 if head_pos[0] > tail_pos[0] else -1)
         if process_id == 8:
             tail_spots.add(tuple(tail_pos))
 
+
 for move in moves:
     direction, distance = move[0], int(move[1])
     for _ in range(1, distance + 1):
         simulate_head_part2(direction)
-        for pid in range(1,9):
+        for pid in range(1, 9):
             simulate_knot_part2(pid)
 
 print(len(tail_spots))
