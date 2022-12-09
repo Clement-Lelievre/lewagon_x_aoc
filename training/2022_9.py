@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 INPUT = """U 1
 R 1
 L 1
@@ -2074,7 +2076,6 @@ def simulate_part1(move: list[str], verbose: bool = False) -> None: # should be 
 tail_spots = set()
 # define the 10 knots, from k0 (head) to k9 (tail)
 init_pos = [0,0]
-from copy import deepcopy
 k0_pos, k1_pos, k2_pos, k3_pos, k4_pos, k5_pos, k6_pos, k7_pos, k8_pos, k9_pos = (
     deepcopy(init_pos),
     deepcopy(init_pos),
