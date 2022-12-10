@@ -1,3 +1,5 @@
+import numpy as np
+
 INPUT = """addx 1
 addx 5
 noop
@@ -159,3 +161,55 @@ for nb in nbs:
     solution += answer * nb
 
 print(solution)
+
+# part 2
+# the X register controls the horizontal position of a sprite. Specifically,
+# the sprite is 3 pixels wide, and the X register sets
+# the horizontal position of the middle of that sprite
+# If the sprite is positioned such that one of its three pixels is the pixel
+# currently being drawn, the screen produces a lit pixel (#);
+# otherwise, the screen leaves the pixel dark (.)
+
+
+x = 1
+sprite = [x - 1, x, x + 1]
+nb_pixels = 40 * 6
+pixel_currently_drawn_ind = 0
+drawing = []
+cycle = 0
+inst_nb = 0
+
+while cycle < nb_pixels:
+    # compute x
+    if (elem := instructions[inst_nb]).startswith("n"):
+        # check if pixel lit or not
+        if pixel_currently_drawn_ind % 40 in sprite:
+            drawing.append("#")
+        else:
+            drawing.append(
+                " "
+            )  # space will be clearer than a dot when reading the image
+        cycle += 1
+        pixel_currently_drawn_ind += 1
+        # print(f'{elem},{cycle=}, {sprite=}, {"".join(drawing)}')
+    else:
+        for _ in range(2):
+            # check if pixel lit or not
+            if pixel_currently_drawn_ind % 40 in sprite:
+                drawing.append("#")
+            else:
+                drawing.append(" ")  # will be clearer than a dot when reading
+                # the image
+            pixel_currently_drawn_ind += 1
+            cycle += 1
+            # print(f'{elem},{cycle=}, {sprite=}, {"".join(drawing)}')
+        # update the sprite
+        x += int(elem.split()[-1])
+        sprite = [x - 1, x, x + 1]
+    inst_nb += 1
+
+
+# displaying the image (could add an OCR layer instead)
+image = np.array(drawing).reshape(6, 40)
+for row in image:
+    print(*row)
