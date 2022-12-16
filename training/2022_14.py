@@ -166,8 +166,6 @@ INPUT = """514,127 -> 518,127
 490,23 -> 490,17 -> 490,23 -> 492,23 -> 492,22 -> 492,23 -> 494,23 -> 494,16 -> 494,23 -> 496,23 -> 496,17 -> 496,23 -> 498,23 -> 498,18 -> 498,23 -> 500,23 -> 500,13 -> 500,23 -> 502,23 -> 502,13 -> 502,23 -> 504,23 -> 504,13 -> 504,23 -> 506,23 -> 506,15 -> 506,23 -> 508,23 -> 508,22 -> 508,23
 """
 
-INPUT = """498,4 -> 498,6 -> 496,6
-503,4 -> 502,4 -> 502,9 -> 494,9"""
 
 BIG = (
     10**99
@@ -181,6 +179,7 @@ rows = [[tuple(map(int, e.split(",")))[::-1] for e in row] for row in rows]
 grid = np.full(
     shape=(10_000, 10_000), fill_value=" "
 )  # arbitrarily large to avoid managing IndexError issues if reaching the edges of the grid
+# my program'd likely run faster using dtype=int instead of str, but this is more readable when pretty-printing
 
 upmost = BIG
 downmost = 0
@@ -242,6 +241,12 @@ for item in rows:
 
 
 def pretty_print(grid: np.array, MARGIN: int = 3) -> None:
+    """Used to print my grid in the console
+
+    Args:
+        grid (np.array): the grid where the sand falls take place
+        MARGIN (int, optional): the padding around the relevant part of the grid. Defaults to 3.
+    """
     printed_grid = grid[
         upmost - MARGIN : downmost + 1 + MARGIN,
         leftmost - MARGIN : rightmost + 1 + MARGIN,
@@ -251,7 +256,19 @@ def pretty_print(grid: np.array, MARGIN: int = 3) -> None:
     print("\n")
 
 
-def make_sand_fall(grid, sand_start=(0, 500), verbose: bool = False) -> bool:
+def make_sand_fall_part1(
+    grid, sand_start=(0, 500), verbose: bool = False
+) -> bool:  # can be optimized as I use a while loop and grid.__getitem__
+    """Simulates the fall of the sand
+
+    Args:
+        grid (_type_): _description_
+        sand_start (tuple, optional): _description_. Defaults to (0, 500).
+        verbose (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        bool: _description_
+    """
     x, y = sand_start
     while x < downmost:
         if grid[x + 1, y] == " ":
@@ -274,8 +291,45 @@ def make_sand_fall(grid, sand_start=(0, 500), verbose: bool = False) -> bool:
 
 finished = False
 while not finished:
-    finished = make_sand_fall(grid, verbose=True)
+    finished = make_sand_fall_part1(grid)
 
 print((grid == "o").sum())
 
 # part 2
+# note that running the file runs part 1 and then builds from it to run part 2. I could also comment out part 1 and run part 2 only
+
+grid[downmost + 2, :] = "#"
+downmost += 2
+
+
+def make_sand_fall_part2(grid, sand_start=(0, 500), verbose: bool = False) -> bool:
+    x, y = sand_start
+    while (
+        True
+    ):  # not best to use true as condition, better to specify an explicit breaking condition, but hey this is AoC
+        if grid[x + 1, y] == " ":
+            x += 1
+        elif grid[x + 1, y - 1] == " ":
+            x += 1
+            y -= 1
+        elif grid[x + 1, y + 1] == " ":
+            x += 1
+            y += 1
+        else:
+            break
+    if (x, y) != sand_start:
+        grid[x, y] = "o"
+        if verbose:
+            pretty_print(grid)
+        return False
+    grid[x, y] = "o"
+    return True
+
+
+finished = False
+while not finished:
+    finished = make_sand_fall_part2(
+        grid
+    )  # iterations should be faster and faster as the distance to destination decreases
+print((grid == "o").sum())
+pretty_print(grid)
