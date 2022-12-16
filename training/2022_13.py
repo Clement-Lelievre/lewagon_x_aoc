@@ -592,7 +592,10 @@ class Packet:
     def __repr__(self) -> str:
         return f"{self.content}"
 
-    def __gt__(self, other_packet) -> bool:
+    def __gt__(
+        self, other_packet
+    ) -> bool:  # starting from Python 3.11 I can do 'from typing import Self' then type hint 'other_packet: Self' in the method args,
+        # as I can't do 'other_packet: Packet' bcs the class isn't defined yet at this stage
         return not compare_two_lists(
             self.content, other_packet.content
         )  # see function from part 1
