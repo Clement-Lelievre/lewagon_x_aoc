@@ -501,65 +501,141 @@ def are_in_order(left, right) -> bool | None:
     elif isinstance(left, list) and isinstance(right, int):
         return are_in_order(left, [right])
     elif isinstance(left, list) and isinstance(right, list):
-        found = None
-        j = 0
-        if len(left) == 0 and len(right):  # case where left is empty (e.g.: [] vs [[]])
-            return True
-        if len(right) == 0 and len(
-            left
-        ):  # case where right is empty (e.g.: [[]] vs [])
-            return False
-        while (found is None) and (j < min(len(left), len(right))):
-            found = are_in_order(left[j], right[j])
-            j += 1
-        if found is not None:
-            return found
+        return compare_two_lists(left, right, outermost_level=False)
     else:
         raise TypeError(f"Please check type of {left} and {right}")
 
 
-def compare(left, right) -> bool:
-    """The main function, that makes the comparison between pairs of packets
+def compare_two_lists(
+    left: list, right: list, outermost_level: bool = True, verbose: bool = False
+) -> bool:
+    """The main function, that makes the comparison between two lists of packets of packets
 
     Args:
-        left (_type_): _description_
-        right (_type_): _description_
+        left (list): _description_
+        right (list): _description_
 
     Returns:
         bool: whether left and right are in order
     """
+    if len(left) == 0 and len(right) > 0:
+        return True
+    if len(right) == 0 and len(left) > 0:
+        return False
     found = None
     i = 0
+    if verbose:
+        print(f"Let us compare {left} and {right}, {outermost_level=}")
     while (found is None) and (i < min(len(left), len(right))):
+        if verbose:
+            print(f"comparing {left[i]} and {right[i]}")
         found = are_in_order(left[i], right[i])
+        if verbose:
+            print(f"Conclusion ({outermost_level=}): {found}")
         i += 1
-    if found is None and len(left) == len(right):
-        print(f"no decision, left={left}, right={right}")
-    return found if found is not None else (False, True)[len(left) < len(right)]
+    # if found is None:
+    #     print(f"no decision, left={left}, right={right}, {(False, True)[len(left) < len(right)]}")
+    if (found is None) and (len(left) == len(right)) and outermost_level:
+        raise ValueError(f"Problem: undecidable ({left=}, {right=}")
+    final_conclusion = (
+        found
+        if found is not None
+        else (
+            None if len(left) == len(right) else (False, True)[len(left) < len(right)]
+        )
+    )
+    if verbose:
+        print(f"{final_conclusion=}, ({outermost_level=})")
+    return final_conclusion
 
 
 # tests provided
-assert compare([[1], [2, 3, 4]], [[1], 4]) is True
-assert compare([[4, 4], 4, 4], [[4, 4], 4, 4, 4]) is True
-assert compare([9], [[8, 7, 6]]) is False
-assert compare([1, 1], [1, 1, 1]) is True
-assert compare([7, 7, 7, 7], [7, 7, 7]) is False
-assert compare([], [3]) is True
-assert compare([[[]]], [[]]) is False
-assert (
-    compare([1, [2, [3, [4, [5, 6, 7]]]], 8, 9], [1, [2, [3, [4, [5, 6, 0]]]], 8, 9])
-    is False
-)
-
-
+# assert compare_two_lists([[2, 3, 4]], [ 4]) is True
+# assert compare_two_lists([[1], [2, 3, 4]], [[1], 4]) is True
+# assert compare_two_lists([[4, 4], 4, 4], [[4, 4], 4, 4, 4]) is True
+# assert compare_two_lists([9], [[8, 7, 6]]) is False
+# assert compare_two_lists([1, 1], [1, 1, 1]) is True
+# assert compare_two_lists([7, 7, 7, 7], [7, 7, 7]) is False
+# assert compare_two_lists([], [3]) is True
+# assert compare_two_lists([[[]]], [[]]) is False
+# assert (
+#     compare_two_lists([1, [2, [3, [4, [5, 6, 7]]]], 8, 9], [1, [2, [3, [4, [5, 6, 0]]]], 8, 9])
+#     is False
+# )
 # step 3: iterate over the extracted elements using the comparison function
 
 print(
     sum(
-        i // 2 + 1 if compare(elems[i], elems[i + 1]) else 0
+        i // 2 + 1 if compare_two_lists(elems[i], elems[i + 1]) else 0
         for i in range(0, len(elems), 2)
     )
 )
 
 
 # part 2
+
+# add the divider packets
+divider_packets = [[[2]], [[6]]]
+for divider_packet in divider_packets:
+    elems.append(divider_packet)
+    assert (
+        divider_count := elems.count(divider_packet)
+    ) == 1, f"There should be exactly one divider like {divider_packet}, found {divider_count}"
+
+# define the Packet class implementing the necessary operators
+class Packet:
+    "The packet that holds a list and can be compared to another packet"
+
+    def __init__(self, content) -> None:
+        self.content = content
+
+    def __repr__(self) -> str:
+        return f"{self.content}"
+
+    def __gt__(self, other_packet) -> bool:
+        return not compare_two_lists(
+            self.content, other_packet.content
+        )  # see function from part 1
+
+    def __lt__(self, other_packet) -> bool:
+        return compare_two_lists(
+            self.content, other_packet.content
+        )  # see function from part 1
+
+    def __len__(self) -> int:
+        return len(self.content)
+
+    def __getitem__(self, i: int):
+        if abs(i) < len(self):
+            return self.content[i]
+        raise IndexError
+
+    def __eq__(self, other_packet) -> bool:
+        return self.content == other_packet.content
+
+
+# apply it to the list packets
+
+part2_elems = [Packet(elem) for elem in elems]
+
+# perform the sort
+all_indices = range(len(part2_elems))
+sorted_elems = [0] * len(all_indices)
+
+for packet_ind in all_indices:
+    is_greater_than = (
+        0  # counts how many times this packet is greater than other packets
+    )
+    for (
+        other_packet_ind
+    ) in all_indices:  # this nested for loop is not optimized but fast enough here
+        if packet_ind != other_packet_ind:
+            is_greater_than += (
+                current_elem_checked := part2_elems[packet_ind]
+            ) > part2_elems[other_packet_ind]
+    sorted_elems[is_greater_than] = current_elem_checked
+
+answer = (sorted_elems.index(Packet(divider_packets[0])) + 1) * (
+    sorted_elems.index(Packet(divider_packets[1])) + 1
+)
+print(answer)
