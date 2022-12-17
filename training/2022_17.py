@@ -216,14 +216,16 @@ NB_ITERATIONS = 1_000_000_000_000
 # I think there should be a convergence at some point, in other words a pattern that repeats itself
 
 # pr trouver le pattern, je dois identifier quand je m'apprête à faire tomber le même shape , que je suis
-# au même jets_index, et quand 3 lignes en dessous, j'ai le même rock d'appui (aux mêmes coords)
+# au même jets_index, et quand x lignes en dessous, j'ai les mêmes rocks at rest (aux mêmes coords)
+
+# je choisis x = 50 mais il serait intéressant d'étudier la vraie valeur
 
 data = []
 tower_heights = []
 pattern_found = False
 i = 0
 while not pattern_found:
-    iteration_data = (jet_index, shape_ind)
+    iteration_data = (jet_index, shape_ind, chamber[:50].flatten().tolist())
     simulate_shape_fall()
     if iteration_data in data:
         print(f"found a pattern after {i} iterations: {iteration_data=}")
@@ -245,9 +247,7 @@ partial_answer = init_uncomplete_tower_height + repeated_tower_height * (
 nb_iter_so_far = len_uncomplete_tower + len_repeated_tower * (
     (NB_ITERATIONS - len_uncomplete_tower) // len_repeated_tower
 )
-remaining_iter = (
-    NB_ITERATIONS - len_uncomplete_tower
-) % len_repeated_tower  # NB_ITERATIONS - nb_iter_so_far
+remaining_iter = (NB_ITERATIONS - len_uncomplete_tower) % len_repeated_tower
 # we've added the 1st bit (incomplete tower) + the repeated towers, now let's add the final, incomplete tower
 ending_uncomplete_tower_height = (
     tower_heights[len_uncomplete_tower - 1 + remaining_iter]
@@ -256,5 +256,3 @@ ending_uncomplete_tower_height = (
 answer = partial_answer + ending_uncomplete_tower_height
 
 print(answer)
-
-# 1514534885738
