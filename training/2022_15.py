@@ -1,4 +1,5 @@
 import re
+from tqdm import tqdm
 
 INPUT = """Sensor at x=2288642, y=2282562: closest beacon is at x=1581951, y=2271709
 Sensor at x=2215505, y=2975419: closest beacon is at x=2229474, y=3709584
@@ -68,7 +69,7 @@ def manhattan_dist(point1: tuple[int], point2: tuple[int]) -> int:
 
 
 impossible_spots = set()
-TARGET_ROW_NB = 2_000_000
+TARGET_ROW_NB = 2_000_000 if len(INPUT.splitlines()) > 17 else 10
 
 for sensor, beacon in coords:
     dist = manhattan_dist(sensor, beacon)
@@ -83,9 +84,28 @@ for sensor, beacon in coords:
             impossible_spots.add(ic)
 
 # now remove the number of unique beacons and sensors that happen to be on the row number we're interested in
-beacons_on_target_row = set([beacon[1] for _, beacon in coords if beacon[0]==TARGET_ROW_NB])
+beacons_on_target_row = set(
+    [beacon[1] for _, beacon in coords if beacon[0] == TARGET_ROW_NB]
+)
 answer = len(impossible_spots) - len(beacons_on_target_row)
 
 print(answer)
-# part 2
+# part 2# below the naïve approach (works on the test input but doesn't scale)
+MAX_SEARCH = 4_000_000 if len(INPUT.splitlines()) > 17 else 20
+search_space = (
+    (x, y) for x in range(MAX_SEARCH) for y in range(MAX_SEARCH)
+)  # generator so it's memory efficient
 
+for sensor, beacon in tqdm(coords):
+    dist = manhattan_dist(sensor, beacon)
+    is_out_of_zone = (
+        lambda coord: True
+        if manhattan_dist(coord, sensor)
+        > dist  # or (coord[0]+coord[1] < sensor[0] - dist))
+        else False
+    )
+    search_space = frozenset(
+        filter(is_out_of_zone, search_space)
+    )  # this is the bottleneck, especially at the first iteration of the loop
+
+print(list(search_space))
