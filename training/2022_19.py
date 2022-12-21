@@ -275,9 +275,6 @@ def get_quality_level(recipe: str) -> int:
     return int(recipe_nb_extractor.search(recipe).group(1)) * monte_carlo(recipe)
 
 
-# answer = sum(map(get_quality_level, recipes))
-# print(answer)
-
 if __name__ == "__main__":
     with Pool() as p:
         a = p.map(get_quality_level, recipes)

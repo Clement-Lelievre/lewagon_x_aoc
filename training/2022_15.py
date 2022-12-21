@@ -1,5 +1,6 @@
 import re
 from tqdm import tqdm
+from itertools import combinations
 
 INPUT = """Sensor at x=2288642, y=2282562: closest beacon is at x=1581951, y=2271709
 Sensor at x=2215505, y=2975419: closest beacon is at x=2229474, y=3709584
@@ -90,22 +91,83 @@ beacons_on_target_row = set(
 answer = len(impossible_spots) - len(beacons_on_target_row)
 
 print(answer)
-# part 2# below the naïve approach (works on the test input but doesn't scale)
-MAX_SEARCH = 4_000_000 if len(INPUT.splitlines()) > 17 else 20
-search_space = (
-    (x, y) for x in range(MAX_SEARCH) for y in range(MAX_SEARCH)
-)  # generator so it's memory efficient
+# part 2 # the massive size of the grid is a tipoff that some smart computation must be performed instead of looping or building the grid
+# below in comments, the naïve approach (works on the test input but doesn't scale)
 
-for sensor, beacon in tqdm(coords):
+# MAX_SEARCH = 4_000_000 if len(INPUT.splitlines()) > 17 else 20
+# search_space = (
+#     (x, y) for x in range(MAX_SEARCH) for y in range(MAX_SEARCH)
+# )  # generator so it's memory efficient
+
+# for sensor, beacon in tqdm(coords):
+#     dist = manhattan_dist(sensor, beacon)
+#     is_out_of_zone = (
+#         lambda coord: True
+#         if manhattan_dist(coord, sensor)
+#         > dist  # or (coord[0]+coord[1] < sensor[0] - dist))
+#         else False
+#     )
+#     search_space = frozenset(
+#         filter(is_out_of_zone, search_space)
+#     )  # this is the bottleneck, especially at the first iteration of the loop
+
+# print(list(search_space))
+
+# drawing the 'diamond' shapes, it seems that the fact there is a unique point that isn't on any diamond
+# means there must be some parallel edges between some of the diamonds, only separated by a distance 1
+# I found that by drawing the coveted point surrounded by 8 points that belong to at least 1 diamond shape
+
+# let us first try to find those parallels
+
+# generate the lines coeff from a diamond
+def get_diamond_edge_points(data) -> tuple[tuple[int]]:
+    '''Returns the slope and intercept of each of the four straight lines created by the diamond shape'''
+    sensor, beacon = data
     dist = manhattan_dist(sensor, beacon)
-    is_out_of_zone = (
-        lambda coord: True
-        if manhattan_dist(coord, sensor)
-        > dist  # or (coord[0]+coord[1] < sensor[0] - dist))
-        else False
-    )
-    search_space = frozenset(
-        filter(is_out_of_zone, search_space)
-    )  # this is the bottleneck, especially at the first iteration of the loop
+    
+    west = (sensor[0], sensor[1] - dist)
+    east = (sensor[0], sensor[1]+dist)
+    north = (sensor[0]-dist, sensor[1])
+    south = (sensor[0]+dist, sensor[1])
+    
+    slope1 = (north[1] - west[1]) // (north[0]-west[0])
+    intercept1 = west[1] - slope1*west[0]
+    line1_points = set((x, slope1*x+intercept1) for x in range(north[0], west[0]+1))
+    
+    slope2 = (south[1] - west[1]) // (south[0]-west[0])
+    intercept2 = west[1] - slope2*west[0]
+    line2_points = set((x, slope2*x+intercept2) for x in range(west[0], south[0]+1))
+    
+    slope3 = (south[1] - east[1]) // (south[0]-east[0])
+    intercept3 = east[1] - slope3*east[0]
+    line3_points = set((x, slope3*x+intercept3) for x in range(south[0], east[0]+1))
+    
+    slope4 = (north[1] - east[1]) // (north[0]-east[0])
+    intercept4 = east[1] - slope4*east[0]
+    line4_points = set((x, slope4*x+intercept4) for x in range(north[0], east[0]+1))
+    
+    return line1_points.union(line2_points).union(line3_points).union(line4_points)
+    
+diamond_edges = [get_diamond_edge_points(data) for data in coords]    
+# parallel_lines = []
+# for line_1, line_2 in combinations(unique_lines, 2):
+#     if line_1[0] == line_2[0] and abs(line_1[1] - line_2[1]) == 2:
+#         parallel_lines.append(line_1)
+#         parallel_lines.append(line_2)
 
-print(list(search_space))
+# print(parallel_lines)
+
+# find crossing points
+def get_crossing_point(line_1, line_2):
+    slope1, intercept1 = line_1
+    slope2, intercept2 = line_2
+    return (intercept2 - intercept1) / (slope1 - slope2) if slope1 != slope2 else None
+
+# look at intercepting points
+all_crossing_points = set()
+for diamond1, diamond2 in combinations(diamond_edges, 2):
+    s = diamond1.intersection(diamond2)
+    for point in s:
+        all_crossing_points.add(point)
+        
+print(sorted(all_crossing_points))
