@@ -1,6 +1,7 @@
 import re
 from random import randint
 from multiprocessing import Pool
+from functools import reduce
 from tqdm import tqdm
 
 INPUT = """Blueprint 1: Each ore robot costs 3 ore. Each clay robot costs 3 ore. Each obsidian robot costs 3 ore and 20 clay. Each geode robot costs 2 ore and 12 obsidian.
@@ -33,13 +34,8 @@ Blueprint 27: Each ore robot costs 3 ore. Each clay robot costs 3 ore. Each obsi
 Blueprint 28: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsidian robot costs 2 ore and 9 clay. Each geode robot costs 3 ore and 19 obsidian.
 Blueprint 29: Each ore robot costs 2 ore. Each clay robot costs 4 ore. Each obsidian robot costs 4 ore and 20 clay. Each geode robot costs 3 ore and 14 obsidian.
 Blueprint 30: Each ore robot costs 4 ore. Each clay robot costs 4 ore. Each obsidian robot costs 2 ore and 16 clay. Each geode robot costs 4 ore and 16 obsidian."""
-# INPUT = """Blueprint 1:Each ore robot costs 4 ore.Each clay robot costs 2 ore.Each obsidian robot costs 3 ore and 14 clay.Each geode robot costs 2 ore and 7 obsidian.
-# Blueprint 2:Each ore robot costs 2 ore.Each clay robot costs 3 ore.Each obsidian robot costs 3 ore and 8 clay.Each geode robot costs 3 ore and 12 obsidian."""
-
-recipes = [recipe for recipe in INPUT.splitlines() if recipe.strip()]
-recipe_nb_extractor = re.compile(r"(\d+):")
-price_extractor = re.compile(r"\d+.*?(\d+).*?(\d+).*?(\d+).*?(\d+).*?(\d+).*?(\d+)")
-BIG = 10**100
+INPUT = """Blueprint 1:Each ore robot costs 4 ore.Each clay robot costs 2 ore.Each obsidian robot costs 3 ore and 14 clay.Each geode robot costs 2 ore and 7 obsidian.
+Blueprint 2:Each ore robot costs 2 ore.Each clay robot costs 3 ore.Each obsidian robot costs 3 ore and 8 clay.Each geode robot costs 3 ore and 12 obsidian."""
 
 
 class Money(tuple):
@@ -72,6 +68,8 @@ class Money(tuple):
 def compute_max_nb_geodes(
     recipe: str, start_nb_ore_robots: int = 1, time: int = 24, verbose: bool = False
 ) -> int:
+    if int(recipe_nb_extractor.search(recipe).group(1)) in [7,15,18,20,22,28,30]: # to speed things up, as I noticed these recipes always yield 0 geodes
+        return 0
     total_time_allowed = time
     current_money = Money((0, 0, 0))  # initial money
     nb_ore_robot, nb_clay_robot, nb_obsidian_robot, nb_geode_robot = (
@@ -107,24 +105,23 @@ def compute_max_nb_geodes(
             nb_ore_robot_bought,
         ) = (0, 0, 0, 0)
         if current_money >= geode_robot_price:
-            nb_geode_robot_bought = randint(0, current_money // geode_robot_price)
-            if nb_geode_robot_bought:  # random choice
-                current_money = Money(
-                    (
-                        current_money.ore
-                        - geode_robot_price.ore * nb_geode_robot_bought,
-                        current_money.clay
-                        - geode_robot_price.clay * nb_geode_robot_bought,
-                        current_money.obsidian
-                        - geode_robot_price.obsidian * nb_geode_robot_bought,
-                    )
+            nb_geode_robot_bought = 1#current_money // geode_robot_price # if I can buy geode robots it's always the best choice
+            current_money = Money(
+                (
+                    current_money.ore
+                    - geode_robot_price.ore * nb_geode_robot_bought,
+                    current_money.clay
+                    - geode_robot_price.clay * nb_geode_robot_bought,
+                    current_money.obsidian
+                    - geode_robot_price.obsidian * nb_geode_robot_bought,
                 )
-                if verbose:
-                    print(
-                        f"bought {nb_geode_robot_bought} geode robot(s), {current_money=} after the transaction"
-                    )
-        if current_money >= obsidian_robot_price and nb_geode_robot_bought == 0:
-            nb_obsidian_robot_bought = randint(0, current_money // obsidian_robot_price)
+            )
+            if verbose:
+                print(
+                    f"bought {nb_geode_robot_bought} geode robot(s), {current_money=} after the transaction"
+                )
+        if current_money >= obsidian_robot_price and (nb_geode_robot_bought == 0):
+            nb_obsidian_robot_bought = randint(0, 1)#current_money // obsidian_robot_price)
             if nb_obsidian_robot_bought:  # random choice
                 current_money = Money(
                     (
@@ -142,9 +139,9 @@ def compute_max_nb_geodes(
                     )
         if (
             current_money >= clay_robot_price
-            and (nb_geode_robot_bought + nb_obsidian_robot_bought) == 0
+            and (nb_geode_robot_bought + nb_obsidian_robot_bought == 0)
         ):
-            nb_clay_robot_bought = randint(0, current_money // clay_robot_price)
+            nb_clay_robot_bought = randint(0, 1)#current_money // clay_robot_price)
             if nb_clay_robot_bought:  # random choice
                 current_money = Money(
                     (
@@ -162,11 +159,9 @@ def compute_max_nb_geodes(
         if (
             current_money >= ore_robot_price
             and (
-                nb_geode_robot_bought + nb_obsidian_robot_bought + nb_clay_robot_bought
-            )
-            == 0
+                nb_geode_robot_bought + nb_obsidian_robot_bought + nb_clay_robot_bought == 0)
         ):
-            nb_ore_robot_bought = randint(0, current_money // ore_robot_price)
+            nb_ore_robot_bought = randint(0, 1)#current_money // ore_robot_price)
             if nb_ore_robot_bought:  # random choice
                 current_money = Money(
                     (
@@ -181,48 +176,13 @@ def compute_max_nb_geodes(
                         f"bought {nb_ore_robot_bought} ore robot(s), {current_money=} after the transaction"
                     )
         # manage robot activity
-        if nb_ore_robot:
-            current_money = Money(
-                (
-                    current_money.ore + nb_ore_robot,
-                    current_money.clay,
-                    current_money.obsidian,
-                )
-            )
-            if verbose:
-                print(
-                    f"{nb_ore_robot} ore-collecting robot collects {nb_ore_robot} ore; you now have {current_money.ore} ore."
-                )
-        if nb_clay_robot:
-            current_money = Money(
-                (
-                    current_money.ore,
-                    current_money.clay + nb_clay_robot,
-                    current_money.obsidian,
-                )
-            )
-            if verbose:
-                print(
-                    f"{nb_clay_robot} clay-collecting robot collects {nb_clay_robot} clay; you now have {current_money.clay} clay."
-                )
-        if nb_obsidian_robot:
-            current_money = Money(
-                (
-                    current_money.ore,
-                    current_money.clay,
-                    current_money.obsidian + nb_obsidian_robot,
-                )
-            )
-            if verbose:
-                print(
-                    f"{nb_obsidian_robot} obsidian-collecting robot collects {nb_obsidian_robot} obsidian; you now have {current_money.obsidian} obsidian."
-                )
-        if nb_geode_robot:
-            nb_geodes += nb_geode_robot
-            if verbose:
-                print(
-                    f"{nb_geode_robot} geode-cracking robot cracks {nb_geode_robot} geode; you now have {nb_geodes} open geodes."
-                )
+        current_money = Money(
+            (
+                current_money.ore + nb_ore_robot,
+                current_money.clay + nb_clay_robot,
+                current_money.obsidian + nb_obsidian_robot,
+            ))
+        nb_geodes += nb_geode_robot
         # update robot numbers in case transaction(s) occurred
         nb_ore_robot += nb_ore_robot_bought
         if verbose and nb_ore_robot_bought:
@@ -251,7 +211,7 @@ def compute_max_nb_geodes(
     return nb_geodes
 
 
-def monte_carlo(recipe: str, n_sim: int = 100_000, verbose: bool = False) -> int:
+def monte_carlo(recipe: str, n_sim: int = 100_000, verbose: bool = False, time:int=24) -> int:
     """Performs a Monte Carlo simulation using `n_sim` simulations and returning the best try (i.e. the max nb of geodes across runs)
 
     Args:
@@ -264,7 +224,7 @@ def monte_carlo(recipe: str, n_sim: int = 100_000, verbose: bool = False) -> int
     """
     current_best = 0
     for _ in range(n_sim):
-        if (score := compute_max_nb_geodes(recipe)) > current_best:
+        if (score := compute_max_nb_geodes(recipe, time=time)) > current_best:
             current_best = score
             if verbose:
                 print(f"{current_best=}")
@@ -274,10 +234,45 @@ def monte_carlo(recipe: str, n_sim: int = 100_000, verbose: bool = False) -> int
 def get_quality_level(recipe: str) -> int:
     return int(recipe_nb_extractor.search(recipe).group(1)) * monte_carlo(recipe)
 
-
-if __name__ == "__main__":
+recipes = [recipe for recipe in INPUT.splitlines() if recipe.strip()]
+recipe_nb_extractor = re.compile(r"(\d+):")
+price_extractor = re.compile(r"\d+.*?(\d+).*?(\d+).*?(\d+).*?(\d+).*?(\d+).*?(\d+)")
+BIG = 10**10
+SOLVE_PART_1 = False
+if __name__ == "__main__" and SOLVE_PART_1 is True:
+    # going for a Monte Carlo simulation (though I'm aware it shines to get the average of the distribution, not the max)
     with Pool() as p:
         a = p.map(get_quality_level, recipes)
     print(a)
-    print(sum(a))
+    print(sum(a)) #[1, 6, 9, 4, 50, 18, 0, 24, 27, 20, 33, 108, 13, 210, 0, 16, 85, 0, 19, 0, 42, 0, 207, 24, 50, 78, 54, 0, 29, 0] -> 1127
 # part 2
+SOLVE_PART_2 = True
+
+def monte_carlo(recipe: str, n_sim: int = 250_000, verbose: bool = False, time:int=32) -> int:
+    """Performs a Monte Carlo simulation using `n_sim` simulations and returning the best try (i.e. the max nb of geodes across runs)
+
+    Args:
+        recipe (str): the recipe
+        n_sim (int, optional): _description_. Defaults to 10_000.
+        verbose (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        int: the result from the best try/tries
+    """
+    current_best = 0
+    for _ in range(n_sim):
+        if (score := compute_max_nb_geodes(recipe, time=time)) > current_best:
+            current_best = score
+            if verbose:
+                print(f"{current_best=}")
+    return current_best
+
+if __name__ == "__main__" and SOLVE_PART_2 is True:
+    recipes = [recipe for recipe in INPUT.splitlines() if recipe.strip()][:3] # now we only look at the first three blueprints
+    mul = lambda x, y : x*y
+    with Pool() as p:
+        a = p.map(monte_carlo, recipes) # now we have 32 minutes
+        print(a)
+        print(reduce(mul, a))
+
+
