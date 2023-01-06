@@ -114,7 +114,9 @@ for perm in tqdm(
         ):  # see point 4) above in my plan
             current_path.extend(shortest_paths[(current_pos, pp)])
             current_pos = pp
-    if (lcp := len(current_path)) < shortest_path_length:
+        if (lcp := len(current_path)) >= shortest_path_length:
+            break  # no need to continue this path: it's already longer than the shortest path
+    else:  # if the break was never triggered, it means it's a new shortest path
         shortest_path_length = lcp
 
 print("part 1:", shortest_path_length)
@@ -128,15 +130,15 @@ for perm in tqdm(
 ):
     current_path = []
     current_pos = start_pos
+    perm = list(perm)
+    perm.append(start_pos)
     for pp in perm:
-        if (
-            pp not in current_path and pp != current_pos
-        ):  # see point 4) above in my plan
+        if (pp not in current_path or pp == start_pos) and pp != current_pos:
             current_path.extend(shortest_paths[(current_pos, pp)])
             current_pos = pp
-    if current_pos != start_pos:  # this is only addition required to my part 1 code
-        current_path.extend(shortest_paths[(current_pos, start_pos)])
-    if (lcp := len(current_path)) < shortest_path_length:
+        if (lcp := len(current_path)) >= shortest_path_length:
+            break
+    else:
         shortest_path_length = lcp
 
 print("part 2:", shortest_path_length)
