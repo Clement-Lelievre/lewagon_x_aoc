@@ -88,19 +88,27 @@ INPUT = """#####################################################################
 #################################################################################
 """
 
-INPUT = """
-########################
-#f.D.E.e.C.b.A.@.a.B.c.#
-######################.#
-#d.....................#
-########################"""
+# INPUT = """
+# ########################
+# #f.D.E.e.C.b.A.@.a.B.c.#
+# ######################.#
+# #d.....................#
+# ########################""" # shortest = 86 SOLVED
 
 # INPUT = '''
 # ########################
 # #...............b.C.D.f#
 # #.######################
 # #.....@.a.B.c.d.A.e.F.g#
-# ########################'''
+# ########################''' # shortest = 132 SOLVED
+
+# INPUT = '''
+# ########################
+# #@..............ac.GI.b#
+# ###d#e#f################
+# ###A#B#C################
+# ###g#h#i################
+# ########################''' # shortest = 81 SOLVED
 
 INPUT = """
 #################
@@ -111,7 +119,7 @@ INPUT = """
 #k.E..a...g..B.n#
 ########.########
 #l.F..d...h..C.m#
-#################"""
+#################"""  # shortest paths = 136 # NOT SOLVED: MY CODE BELOW IS TOO SLOW
 
 
 class Maze:
@@ -152,7 +160,7 @@ class Maze:
                     self.doors[current_type] = current_pos
                 if current_type in self.walls_doors:
                     continue
-                if current_type == ".":
+                if current_type in "." + ascii_lowercase:
                     self.graph.add_node(
                         current_pos
                     )  # abit redundant with the below block but necessary for . surrounded by doors
@@ -237,15 +245,16 @@ def solve(maze: Maze) -> None:
     if len(maze.reached_keys) == maze.nb_keys:  # base case
         if lcp < shortest_path_length:
             shortest_path_length = lcp
+            print(shortest_path_length)
         return
     maze.update_reachable_keys()  # explore possibilities
-    assert maze.reachable_keys
+    # assert maze.reachable_keys
     for (
         k
     ) in (
         maze.reachable_keys
     ):  # this is the cross-roads where I need copies (not new instances) of Mazes
-        assert k != maze.current_pos
+        # assert k != maze.current_pos
         new_maze = deepcopy(maze)
         new_maze.reach_key(k)
         solve(new_maze)
