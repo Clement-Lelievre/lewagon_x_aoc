@@ -1,9 +1,10 @@
 "This challenge reminds me of 2016 day 24, with more constraints though"
-import numpy as np
-import networkx as nx
 from string import ascii_lowercase, ascii_uppercase
 from itertools import combinations
 from copy import deepcopy
+import numpy as np
+import networkx as nx
+
 
 INPUT = """#################################################################################
 #.......#.......#.......O...#.D.........#.......#.......#.....U...#...#.......#.#
@@ -141,7 +142,11 @@ class Maze:
     def _build_graph(self) -> None:
         """Builds the initial maze"""
         self.grid = np.array(
-            [rs for row in self.str_input.splitlines() if (rs := list(row.strip()))]
+            [
+                stripped
+                for row in self.str_input.splitlines()
+                if (stripped := list(row.strip()))
+            ]
         )
         self.graph = nx.Graph()  # undirected, unweighted
         self.walls_doors = "#" + ascii_uppercase
@@ -184,6 +189,11 @@ class Maze:
         }
 
     def open_door(self, door: tuple[int, int]) -> None:
+        """Opens a door by creating the appropriate edges in the graph
+
+        Args:
+            door (tuple[int, int]): the location of the door to open
+        """
         door_row, door_col = door
         current_nodes = deepcopy(self.graph.nodes)
         for node_row, node_col in current_nodes:
@@ -196,6 +206,7 @@ class Maze:
                 # print(f'opened {door}')
 
     def update_reachable_keys(self) -> None:
+        """scans the grid to find potential new keys within reach"""
         for k in self.all_keys_coords.difference(
             self.reachable_keys.union(self.reached_keys)
         ):
@@ -219,6 +230,11 @@ class Maze:
             ]  # do not count the start pos as a move
 
     def reach_key(self, key_: tuple[int, int]) -> None:
+        """Collects a given key and make the necessary updates (path, current position etc.)
+
+        Args:
+            key_ (tuple[int, int]): the location of the key to collect
+        """
         self.current_path.extend(
             (latest_walk := self.shortest_paths[(self.current_pos, key_)])
         )  # register the path made towards the key
@@ -240,8 +256,13 @@ all_situations = (
 
 
 def solve(maze: Maze) -> None:
-    """Recursively explores all possible ways to collect the keys"""
-    global shortest_path_length, all_situations
+    """Recursively explores all possible ways to collect the keys
+
+
+    Args:
+        maze (Maze): a maze object
+    """
+    global shortest_path_length
     if (
         lcp := len(maze.current_path)
     ) >= shortest_path_length:  # not worth continuing this path
