@@ -110,16 +110,16 @@ INPUT = """#####################################################################
 # ###g#h#i################
 # ########################''' # shortest = 81 SOLVED
 
-INPUT = """
-#################
-#i.G..c...e..H.p#
-########.########
-#j.A..b...f..D.o#
-########@########
-#k.E..a...g..B.n#
-########.########
-#l.F..d...h..C.m#
-#################"""  # shortest paths = 136 # NOT SOLVED: MY CODE BELOW IS TOO SLOW
+# INPUT = """
+# #################
+# #i.G..c...e..H.p#
+# ########.########
+# #j.A..b...f..D.o#
+# ########@########
+# #k.E..a...g..B.n#
+# ########.########
+# #l.F..d...h..C.m#
+# #################"""  # shortest paths = 136 # SOLVED but pretty slowly
 
 
 class Maze:
@@ -233,11 +233,15 @@ class Maze:
 
 
 shortest_path_length = float("inf")
+all_situations = (
+    {}
+)  # will store all the (current_pos, self.reached_keys) couples as keys,
+# path_length as values, to avoid duplicated calcs
 
 
 def solve(maze: Maze) -> None:
     """Recursively explores all possible ways to collect the keys"""
-    global shortest_path_length
+    global shortest_path_length, all_situations
     if (
         lcp := len(maze.current_path)
     ) >= shortest_path_length:  # not worth continuing this path
@@ -249,14 +253,26 @@ def solve(maze: Maze) -> None:
         return
     maze.update_reachable_keys()  # explore possibilities
     # assert maze.reachable_keys
-    for (
-        k
-    ) in (
-        maze.reachable_keys
-    ):  # this is the cross-roads where I need copies (not new instances) of Mazes
+    for k in maze.reachable_keys:
+        # this is the cross-roads where I need copies (not new instances) of Mazes
         # assert k != maze.current_pos
         new_maze = deepcopy(maze)
         new_maze.reach_key(k)
+        lncp = len(new_maze.current_path)
+        if (
+            all_situations.get(
+                (
+                    situation := (
+                        new_maze.current_pos,
+                        tuple(sorted(new_maze.reached_keys)),
+                    )
+                ),
+                float("inf"),
+            )
+            <= lncp
+        ):
+            return  # not worth continuing this path
+        all_situations[situation] = lncp
         solve(new_maze)
 
 
