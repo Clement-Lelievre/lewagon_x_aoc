@@ -5001,132 +5001,184 @@ INPUT = """9562
 8333
 3475
 """
-INPUT='''1
-2
--3
-3
--2
-0
-4'''
-# INPUT = '''1
-# 4
-# -1'''
-# processing the input
-arr = list(
-    enumerate(map(int, filter(None, INPUT.splitlines())))
-)  # I'll use indices to make numbers unique as there are duplicates
-frozen = deepcopy(arr)  # an ordered record of the items in their initial position
-arr_length = len(arr)
-print('initial array:', [e[1] for e in arr])
-# doing the mixing
-# for ind, nb in frozen:
-#     if nb != 0:
-#         current_ind = arr.index((ind, nb))
-#         new_ind = (abs((current_ind + nb)) % arr_length) * (
-#             1 if current_ind + nb >= 0 else -1
-#         )
-#         if nb > 0 and current_ind + nb > arr_length:
-#             new_ind += 1
-#         arr.pop(current_ind)
-#         if new_ind not in (0, -1, arr_length - 1):
-#             arr.insert(new_ind, (ind, nb))
-#         elif new_ind == 0:
-#             arr.append((ind, nb))
-#         else:
-#             arr.insert(0, (ind, nb))
 
-# for ind, nb in frozen:
-#     if nb != 0:
-#         current_ind = arr.index((ind, nb))
-#         new_ind = (current_ind + nb)%arr_length
-#         if current_ind + nb >= 0:
-#             if 1 <= new_ind  <= arr_length -2:
-#                 arr.pop(current_ind)
-#                 arr.insert(new_ind if current_ind + nb<= arr_length else new_ind+1,  (ind, nb))
-#             elif new_ind  == 0:
-#                 arr.pop(current_ind)
-#                 arr.append((ind, nb))
-#             elif new_ind     == arr_length-1:
-#                 arr.pop(current_ind)
-#                 arr.insert(0, (ind, nb))
-#         else:
-#             new_ind += -1*(abs(current_ind + nb) % arr_length)
-#             if new_ind  == 0:
-#                 arr.pop(current_ind)
-#                 arr.append((ind, nb))
-#             elif new_ind     == -1:
-#                 arr.pop(current_ind)
-#                 arr.insert(0, (ind, nb))
-#             nb_to_left = current_ind
-#             arr.pop(current_ind)
-#             arr.insert(-(-nb%arr_length-current_ind), (ind, nb))
-#     #print([e[1] for e in arr])
+
+# I got tired of this and only half-motivated so eventually I looked up Peter Norvig's solution, thanks to him!
+def mix(numbers: list[int]) -> list[int]:
+    """Mix the numbers by, in turn, moving each one right or left by its value."""
+    N = len(numbers)
+    mixednums = list(range(N)) # A list of indexes into `numbers`; this will be mixed up.
+    for n in range(N):
+        # Move the `n`th number (in the original list of numbers) from position `i` to position `j`
+        i = mixednums.index(n)
+        del mixednums[i]
+        j = (i + numbers[n]) % (N - 1)
+        mixednums.insert(j, n)
+    return [numbers[i] for i in mixednums] # Convert indexes back to original numbers
+
+def grove_coordinates(numbers, offsets=(1000, 2000, 3000)) -> list[int]:
+    """The numbers at these offsets from the number 0."""
+    assert 0 in numbers
+    i = numbers.index(0)
+    return sum(numbers[(i + offset) % len(numbers)] for offset in offsets)
+
+nbs = list(map(int, INPUT.splitlines()))
+print('part 1:', grove_coordinates(mix(nbs)))
+
+# part 2: I could easily by myself building on Norvig's solution, with minimal changes required and no exponential run time blow
+# First, you need to apply the decryption key, 811589153. Multiply each number by the decryption key before you begin; 
+# this will produce the actual list of numbers to mix.
+
+# Second, you need to mix the list of numbers ten times. The order in which the numbers are mixed does not change during mixing;
+# the numbers are still moved in the order they appeared in the original, pre-mixed list. 
+# (So, if -3 appears fourth in the original list of numbers to mix, -3 will be the fourth number to move during each round of mixing.)
+KEY = 811_589_153
+
+def mix2(numbers: list[int]) -> list[int]:
+    """Mix the numbers by, in turn, moving each one right or left by its value."""
+    N = len(numbers)
+    mixednums = list(range(N)) # A list of indexes into `numbers`; this will be mixed up.
+    for _ in range(10):
+        for n in range(N):
+            # Move the `n`th number (in the original list of numbers) from position `i` to position `j`
+            i = mixednums.index(n)
+            del mixednums[i]
+            j = (i + numbers[n]) % (N - 1)
+            mixednums.insert(j, n)
+    return [numbers[i] for i in mixednums] # Convert indexes back to original numbers
+
+nbs = [elem*KEY for elem in map(int, INPUT.splitlines())]
+print('part 2:', grove_coordinates(mix2(nbs)))
+
+
+
+
+
+
+
+
+
+
+
+# # INPUT = '''1
+# # 4
+# # -1'''
+# # processing the input
+# arr = list(
+#     enumerate(map(int, filter(None, INPUT.splitlines())))
+# )  # I'll use indices to make numbers unique as there are duplicates
+# frozen = deepcopy(arr)  # an ordered record of the items in their initial position
+# arr_length = len(arr)
+# print('initial array:', [e[1] for e in arr])
+# # doing the mixing
+# # for ind, nb in frozen:
+# #     if nb != 0:
+# #         current_ind = arr.index((ind, nb))
+# #         new_ind = (abs((current_ind + nb)) % arr_length) * (
+# #             1 if current_ind + nb >= 0 else -1
+# #         )
+# #         if nb > 0 and current_ind + nb > arr_length:
+# #             new_ind += 1
+# #         arr.pop(current_ind)
+# #         if new_ind not in (0, -1, arr_length - 1):
+# #             arr.insert(new_ind, (ind, nb))
+# #         elif new_ind == 0:
+# #             arr.append((ind, nb))
+# #         else:
+# #             arr.insert(0, (ind, nb))
+
+# # for ind, nb in frozen:
+# #     if nb != 0:
+# #         current_ind = arr.index((ind, nb))
+# #         new_ind = (current_ind + nb)%arr_length
+# #         if current_ind + nb >= 0:
+# #             if 1 <= new_ind  <= arr_length -2:
+# #                 arr.pop(current_ind)
+# #                 arr.insert(new_ind if current_ind + nb<= arr_length else new_ind+1,  (ind, nb))
+# #             elif new_ind  == 0:
+# #                 arr.pop(current_ind)
+# #                 arr.append((ind, nb))
+# #             elif new_ind     == arr_length-1:
+# #                 arr.pop(current_ind)
+# #                 arr.insert(0, (ind, nb))
+# #         else:
+# #             new_ind += -1*(abs(current_ind + nb) % arr_length)
+# #             if new_ind  == 0:
+# #                 arr.pop(current_ind)
+# #                 arr.append((ind, nb))
+# #             elif new_ind     == -1:
+# #                 arr.pop(current_ind)
+# #                 arr.insert(0, (ind, nb))
+# #             nb_to_left = current_ind
+# #             arr.pop(current_ind)
+# #             arr.insert(-(-nb%arr_length-current_ind), (ind, nb))
+# #     #print([e[1] for e in arr])
         
+# # for ind, nb in frozen:
+# #     if nb != 0:
+# #         current_ind = arr.index((ind, nb))
+# #         if 1<=current_ind + nb <= arr_length-2:
+# #             arr.pop(current_ind)
+# #             arr.insert(current_ind + nb, (ind, nb))
+# #         elif current_ind +nb== 0:
+# #             arr.pop(current_ind)
+# #             arr.append((ind, nb))
+# #         elif current_ind +nb in (-1,arr_length-1):
+# #             arr.pop(current_ind)
+# #             arr.insert(0, (ind, nb))
+            
+# #         if current_ind + nb >= arr_length: # dépasse par la droite
+# #             new_ind = (current_ind + nb) % arr_length
+# #             nb_a_droite = arr_length-(current_ind+1)
+# #             arr.pop(current_ind)
+# #             arr.insert(new_ind-nb_a_droite+2, (ind, nb))
+            
+# #         if current_ind + nb < 0: # dépasse par la gauche
+# #             new_ind = current_ind - (-1*nb % arr_length)
+# #             if new_ind > 0:
+# #                 arr.pop(current_ind)
+# #                 arr.insert(new_ind, (ind, nb))
+# #             elif new_ind == 0:
+# #                 arr.pop(current_ind)
+# #                 arr.append((ind, nb))
+# #             elif new_ind == -1:
+# #                 arr.pop(current_ind)
+# #                 arr.append((ind, nb)) # check this
+# #             else:
+# #                 nb_a_gauche = current_ind
+# #                 remaining = new_ind - nb_a_gauche
+# #                 arr.pop(current_ind)
+# #                 arr.insert(new_ind, (ind, nb))
+# #     #print([e[1] for e in arr])
 # for ind, nb in frozen:
-#     if nb != 0:
-#         current_ind = arr.index((ind, nb))
-#         if 1<=current_ind + nb <= arr_length-2:
-#             arr.pop(current_ind)
-#             arr.insert(current_ind + nb, (ind, nb))
-#         elif current_ind +nb== 0:
-#             arr.pop(current_ind)
-#             arr.append((ind, nb))
-#         elif current_ind +nb in (-1,arr_length-1):
-#             arr.pop(current_ind)
-#             arr.insert(0, (ind, nb))
-            
-#         if current_ind + nb >= arr_length: # dépasse par la droite
-#             new_ind = (current_ind + nb) % arr_length
-#             nb_a_droite = arr_length-(current_ind+1)
-#             arr.pop(current_ind)
-#             arr.insert(new_ind-nb_a_droite+2, (ind, nb))
-            
-#         if current_ind + nb < 0: # dépasse par la gauche
-#             new_ind = current_ind - (-1*nb % arr_length)
-#             if new_ind > 0:
-#                 arr.pop(current_ind)
-#                 arr.insert(new_ind, (ind, nb))
-#             elif new_ind == 0:
-#                 arr.pop(current_ind)
-#                 arr.append((ind, nb))
-#             elif new_ind == -1:
-#                 arr.pop(current_ind)
-#                 arr.append((ind, nb)) # check this
+#     shift = abs(nb) % arr_length
+#     current_ind = arr.index((ind, nb))
+#     new_ind = current_ind
+#     passed = False
+#     if nb > 0 :
+#         for _ in range(shift):
+#             if new_ind+1 < arr_length:
+#                 new_ind +=  1
 #             else:
-#                 nb_a_gauche = current_ind
-#                 remaining = new_ind - nb_a_gauche
-#                 arr.pop(current_ind)
-#                 arr.insert(new_ind, (ind, nb))
-#     #print([e[1] for e in arr])
-for ind, nb in frozen:
-    shift = abs(nb) % arr_length
-    current_ind = arr.index((ind, nb))
-    new_ind = current_ind
-    passed = False
-    if nb > 0 :
-        for _ in range(shift):
-            if new_ind+1 < arr_length:
-                new_ind +=  1
-            else:
-                new_ind=0
-                passed=True
-    elif nb <0:
-        for _ in range(shift):
-            if new_ind-1 > 0:
-                new_ind -=  1
-            else:
-                new_ind=arr_length-1
-    arr.pop(current_ind)
-    arr.insert(new_ind if not passed else new_ind+1, (ind, nb))
-    print([e[1] for e in arr])
+#                 new_ind=0
+#                 passed=True
+#     elif nb <0:
+#         for _ in range(shift):
+#             if new_ind-1 > 0:
+#                 new_ind -=  1
+#             else:
+#                 new_ind=arr_length-1
+#     arr.pop(current_ind)
+#     arr.insert(new_ind if not passed else new_ind+1, (ind, nb))
+#     print([e[1] for e in arr])
     
-# getting the solution
-arr = [elem[1] for elem in arr]  # get rid of the indices
-assert arr.count(0) == 1
-zero_ind = arr.index(0)
-answer = (
-    arr[(zero_ind + 1_000) % len(arr)]
-    + arr[(zero_ind + 2_000) % len(arr)]
-    + arr[(zero_ind + 3_000) % len(arr)]
-)
-print(answer)
+# # getting the solution
+# arr = [elem[1] for elem in arr]  # get rid of the indices
+# assert arr.count(0) == 1
+# zero_ind = arr.index(0)
+# answer = (
+#     arr[(zero_ind + 1_000) % len(arr)]
+#     + arr[(zero_ind + 2_000) % len(arr)]
+#     + arr[(zero_ind + 3_000) % len(arr)]
+# )
+# print(answer)
