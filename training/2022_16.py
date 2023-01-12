@@ -148,6 +148,14 @@ def explore_slow(
         )
 
 
+# def is_dominated(state: tuple) -> bool:
+#     state_room, state_time_left, state_tpr = state
+#     return any(
+#         state_room == room and state_tpr == tpr and t >= state_time_left
+#         for room, t, tpr in visited
+#     )
+
+
 def explore(
     current_room: str,
     time_left: int,
@@ -178,7 +186,7 @@ def explore(
         )
 
 
-explore("AA", 30, dict(), 0)
+explore("AA", 30, {}, 0)
 print(max_pressure_released)  # 2077
 
 # my solution above works on every actual input I've come across (including mine of course), but not on the example input!
