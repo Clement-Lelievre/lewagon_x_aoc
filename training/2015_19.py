@@ -1,4 +1,6 @@
 import re
+from collections import deque
+from typing import Generator
 
 REPLACEMENTS = """Al => ThF
 Al => ThRnFAr
@@ -58,7 +60,7 @@ print("part 1:", len(possible_molecules))
 
 # part 2
 # I feel like starting from the end, i.e. from my input molecule. I feel there'll be less explosive combinatorics
-def transform_mol(mol: str):
+def transform_mol(mol: str) -> Generator[str, str, str]:
     """Shrinks `mol` by returning all neighbours after exactly one possible transformation
 
     Args:
@@ -71,11 +73,12 @@ def transform_mol(mol: str):
     for after, before in replacements.items():
         for e in re.finditer(after, mol):
             span = e.span()
-            neighbours.add(mol[: span[0]] + before + mol[span[1] :])
+            neighbours.add("".join((mol[: span[0]], before, mol[span[1] :])))
     for neigh in neighbours:
         yield neigh
 
 
+# recursive functino below (DFS?) solves instantly
 def backtrack(
     current_mol: str = MOLECULE, nb_steps: int = 0, target_mol: str = "e"
 ) -> None:
@@ -100,5 +103,21 @@ visited = set()
 found = False
 backtrack()
 
-
-# queue = deque() # provides O(1) insertion and removal whereas a Python list is O(n) when it comes to removing an item from the front
+# wile loop below (BFS?) is way too slow
+queue = (
+    deque()
+)  # provides O(1) insertion and removal whereas a Python list is O(n) when it comes to removing an item from the front
+nb_steps = 0
+queue.append((MOLECULE, nb_steps))
+visited = set()
+while queue:
+    current_mol, nb_steps = queue.popleft()
+    if current_mol == "e":
+        print(nb_steps)
+        break
+    visited.add(current_mol)
+    for neigh in transform_mol(current_mol):
+        if neigh not in visited:
+            queue.append((neigh, nb_steps + 1))
+else:
+    raise ValueError("Not found")
