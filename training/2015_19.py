@@ -1,5 +1,4 @@
 import re
-from collections import deque, defaultdict
 
 REPLACEMENTS = """Al => ThF
 Al => ThRnFAr
@@ -63,10 +62,10 @@ def transform_mol(mol: str):
     """Shrinks `mol` by returning all neighbours after exactly one possible transformation
 
     Args:
-        mol (str): _description_
+        mol (str): the molecule currently under consideration
 
     Returns:
-        set: _description_
+        set: the set of neighbours of this molecule
     """
     neighbours = set()
     for after, before in replacements.items():
