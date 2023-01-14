@@ -21,7 +21,8 @@ next_rooms = {
     for y in range(4)
 }
 
-visited = set()
+len_shortest_path = float("inf")
+shortest_path = ""
 
 
 def get_open_doors(current_room: tuple[int, int], current_hash: str) -> dict:
@@ -33,19 +34,35 @@ def get_open_doors(current_room: tuple[int, int], current_hash: str) -> dict:
     return {k: v for k, v in next_rooms[current_room].items() if v in opened}
 
 
+# note: initially I wanted to track visited states (see snippet below this comment)
+# but this approach is wrong because the current path keeps changing and so might lead to a new set of open doors
+# visited = set()
+# if (state := (room, frozenset(open_doors))) in visited: # O(1) lookup
+#     return
+
+
 def explore(
     room: tuple[int, int] = (0, 0),
     current_path: str = PASSCODE,
     verbose: bool = False,
 ) -> None | str:
-    if not any(letter in current_path for letter in "UDLR"):
-        visited.clear()  # reset if new game
+    global shortest_path, len_shortest_path
+    if not any(
+        letter in current_path for letter in "UDLR"
+    ):  # reset globals if new game
+        len_shortest_path = float("inf")
+        if verbose:
+            print("reset the globals")
     if room == (3, 3):
-        print(f"Part 1 : found the vault room after {current_path[len(PASSCODE):]}")
-        return current_path[len(PASSCODE) :]
+        if len((lcp := current_path[len(PASSCODE) :])) < len_shortest_path:
+            if verbose:
+                print(f"Part 1 : found the vault with {lcp}")
+            shortest_path = lcp
+            len_shortest_path = len(shortest_path)
+        return
     current_hash = hashlib.md5(current_path.encode()).hexdigest()[:4]
     if verbose:
-        print(f"{room=} - {current_hash=} - {current_path=} - {visited=}")
+        print(f"{room=} - {current_hash=} - {current_path=}")
     if not (
         open_doors := get_open_doors(
             room, current_hash
@@ -54,23 +71,23 @@ def explore(
         if verbose:
             print(f"Stuck in {room} with path {current_path}")
         return
-    if (state := (room, frozenset(open_doors))) in visited:
-        return
-    visited.add(state)
     for next_room, direction in open_doors.items():
         if verbose:
             print(f'going from {room} to {next_room} with direction "{direction}"\n')
-        explore(next_room, current_path + direction)
+        explore(next_room, current_path + direction, verbose=verbose)
 
+
+test_cases = (
+    ("kglvqrro", "DDUDRLRRUDRD"),
+    ("ihgpwlah", "DDRRRD"),
+    ("ulqzkmiv", "DRURDRUDDLLDLUURRDULRLDUUDDDRR"),
+)
+for inp, out in test_cases:
+    explore(current_path=inp)
+    assert shortest_path == out
 
 explore()
-# test_cases = (("ihgpwlah", "DDRRRD"),)
-# #     ("kglvqrro", "DDUDRLRRUDRD"),
-# #     ("ulqzkmiv", "DRURDRUDDLLDLUURRDULRLDUUDDDRR"),
-# # )
-# for inp, out in test_cases:
-#     assert explore(current_path=inp) == out
-
+print(f"Part 1: {shortest_path}")
 # oddly, my code works for my actual input as well as the first test case but not the other two :S
 
 # part 2
@@ -94,7 +111,7 @@ def explore2(
         return
     current_hash = hashlib.md5(current_path.encode()).hexdigest()[:4]
     if verbose:
-        print(f"{room=} - {current_hash=} - {current_path=} - {visited=}")
+        print(f"{room=} - {current_hash=} - {current_path=}")
     if not (
         open_doors := get_open_doors(
             room, current_hash
