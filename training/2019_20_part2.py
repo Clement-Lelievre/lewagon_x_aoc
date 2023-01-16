@@ -122,7 +122,7 @@ TX..#...#.......#...#.....#.#..EK                                               
                                      Y       S   R         S       F         F       H                                 
                                      Q       Y   Q         I       M         W       R                                 """
 
-INPUT = """           
+INPUT = """
              Z L X W       C                 
              Z P Q B       K                 
   ###########.#.#.#.#######.###############  
@@ -269,7 +269,7 @@ for gate in all_gates:
 # perform the search with a recursive function
 shortest_path_length = float("inf")
 visited = set()
-start_end_gates = {start_pos, end_pos}  # AA and ZZ gates
+start_end_gates = frozenset({start_pos, end_pos})  # AA and ZZ gates
 outer_gates_ = set()
 for gate in outer_gates:
     outer_gates_ |= outer_gates[gate]
@@ -327,42 +327,118 @@ def recurse_part2(
             else:
                 recurse_part2(neigh, current_path_length + 1, current_level)
 
+    try:
+        # import sys
 
-try:
-    import sys
+        # sys.setrecursionlimit(10_000) # dangerous
+        recurse_part2(start_pos)
+        print(f"part 2: {shortest_path_length=}")
+    except RecursionError:
+        print(
+            "The maze is too large and triggers a RecursionError, let us switch to a BFS\n"
+        )
 
-    sys.setrecursionlimit(10_000)
-    recurse_part2(start_pos)
-    print(f"part 2: {shortest_path_length=}")
-except RecursionError:
-    print("The maze is too large and triggers a RecursionError, let us switch to a BFS")
 
 # perform the search with a BFS
-# class Node:
-#     """A node in the graph, where one can walk"""
+class Node:
+    """A node in the graph for part 2, where one can walk"""
 
-#     def __init__(self, location: tuple[int, int]) -> None:
-#         self.distance = float("inf")
-#         self.visited = False
-#         self.location = location
-#         self.neighbours = neighbours[self.location]
-#         self.layer = 0
+    def __init__(self, location: tuple[int, int], layer: int) -> None:
+        self.distance = float("inf")
+        self.visited = False
+        self.location = location
+        self.neighbours = neighbours[self.location]
+        self.layer = layer
+
+    def __repr__(self) -> str:
+        return f"Node({self.__dict__})"
 
 
-# queue = deque()  # more efficient than a Python list ( O(1) popping vs O(n) for a list)
-# nodes = set(map(Node, neighbours))
-# st = Node(start_pos)
-# st.distance = 0
-# queue.append(st)
-# while queue:
-#     current_node: Node = queue.popleft()
-#     for neigh in nodes:
-#         if neigh.location in current_node.neighbours and not neigh.visited:
-#             neigh.distance = current_node.distance + 1
-#             queue.append(neigh)
-#     current_node.visited = True
-#     if current_node.location == end_pos and current_node.layer == 0:
-#         print(f"Part 2 with BFS: {current_node.distance}")
-#         break
-# else:
-#     raise ValueError("Impossible to solve")
+queue = deque()  # more efficient than a Python list ( O(1) popping vs O(n) for a list)
+nodes = {0: {pos: Node(pos, 0) for pos in neighbours}}
+all_gates_ = inner_gates_ | outer_gates_
+st = nodes[0][start_pos]
+st.distance = 0
+queue.append(st)
+while queue:
+    current_node: Node = queue.popleft()
+    if current_node.distance > 11_008:
+        raise ValueError("something is wrong")
+    if current_node.visited:
+        continue  # i don't understand why this can happen
+    # for gate_label in inner_gates:
+    #     if current_node.location in inner_gates[gate_label]:
+    #         print(f"Inner gate {gate_label}, {current_node.__dict__}")
+    #         break
+    #     if current_node.location in outer_gates[gate_label]:
+    #         print(f"Outer gate {gate_label}, {current_node.__dict__}")
+    #         break
+    if current_node.location == end_pos and current_node.layer == 0:
+        print(f"Part 2 with BFS: {current_node.distance}")
+        break
+    # assert current_node.layer >= 0
+    if current_node.layer == 0:
+        for cand in nodes[current_node.layer].values():
+            if any(
+                (
+                    (current_node.location in outer_gates_)
+                    and (cand.location in inner_gates_),
+                    cand.location not in current_node.neighbours,
+                    cand.visited,
+                )
+            ):
+                continue
+            if (current_node.location not in inner_gates_) or (
+                cand.location not in outer_gates_
+            ):
+                cand.distance = current_node.distance + 1
+                queue.append(cand)
+            else:
+                next_ = nodes.setdefault(
+                    current_node.layer + 1,
+                    {pos: Node(pos, current_node.layer + 1) for pos in neighbours},
+                )[cand.location]
+
+                # assert next_.layer == current_node.layer + 1
+                if not next_.visited:
+                    next_.distance = current_node.distance + 1
+                    queue.append(next_)
+    else:
+        for cand in nodes[current_node.layer].values():
+            if any(
+                (
+                    cand.location in start_end_gates,
+                    cand.location not in current_node.neighbours,
+                )
+            ):
+                continue
+            if current_node.location in inner_gates_ and cand.location in outer_gates_:
+                next_ = nodes.setdefault(
+                    current_node.layer + 1,
+                    {pos: Node(pos, current_node.layer + 1) for pos in neighbours},
+                )[cand.location]
+                # assert isinstance(next_, Node) and next_.layer == current_node.layer + 1
+                if not next_.visited:
+                    next_.distance = current_node.distance + 1
+                    queue.append(next_)
+            elif (
+                current_node.location in outer_gates_ and cand.location in inner_gates_
+            ):
+                next_ = nodes.setdefault(
+                    current_node.layer - 1,
+                    {pos: Node(pos, current_node.layer - 1) for pos in neighbours},
+                )[cand.location]
+                # assert next_.layer == current_node.layer - 1 and isinstance(next_, Node)
+                if not next_.visited:
+                    next_.distance = current_node.distance + 1
+                    queue.append(next_)
+            elif not cand.visited:  # staying at the same level
+                cand.distance = current_node.distance + 1
+                queue.append(cand)
+    current_node.visited = True
+
+
+else:
+    raise ValueError("Queue exhausted, this is impossible to solve")
+
+# 11008 is too high
