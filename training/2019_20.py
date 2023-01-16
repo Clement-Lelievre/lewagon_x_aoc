@@ -1,4 +1,5 @@
-"""2019 day 20: path finding, recursion, Breadth-First Search, using a queue, some Numpy manipulation etc."""
+"""2019 day 20: path finding, recursion, Breadth-First Search, using a queue,
+some Numpy manipulation etc."""
 from collections import defaultdict, deque
 from string import ascii_uppercase
 import numpy as np
@@ -180,6 +181,7 @@ YN......#               VT..#....QG
 #                                      Y       S   R         S       F         F       H
 #                                      Q       Y   Q         I       M         W       R                                 """
 
+# process the input grid
 donut = np.array([list(row) for row in INPUT.splitlines() if row.strip()])
 nb_rows, nb_cols = donut.shape
 print(f"{donut.shape=}")
@@ -272,8 +274,7 @@ for gate in gates:
     neighbours[gate1].add(gate2)
     neighbours[gate2].add(gate1)
 
-# perform the search with a recursive function (not sure this is BFS as the
-# call to recurse gets executed to the end before iterating I think)
+# perform the search with a recursive function
 shortest_path_length = float("inf")
 visited = set()
 
@@ -309,7 +310,7 @@ try:
 except RecursionError:
     print("This grid is too large and triggers too many calls")
 
-
+# perform the search with a BFS
 class Node:
     """A node in the graph, where one can walk"""
 
