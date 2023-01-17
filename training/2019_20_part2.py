@@ -122,44 +122,44 @@ TX..#...#.......#...#.....#.#..EK                                               
                                      Y       S   R         S       F         F       H                                 
                                      Q       Y   Q         I       M         W       R                                 """
 
-INPUT = """
-             Z L X W       C                 
-             Z P Q B       K                 
-  ###########.#.#.#.#######.###############  
-  #...#.......#.#.......#.#.......#.#.#...#  
-  ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###  
-  #.#...#.#.#...#.#.#...#...#...#.#.......#  
-  #.###.#######.###.###.#.###.###.#.#######  
-  #...#.......#.#...#...#.............#...#  
-  #.#########.#######.#.#######.#######.###  
-  #...#.#    F       R I       Z    #.#.#.#  
-  #.###.#    D       E C       H    #.#.#.#  
-  #.#...#                           #...#.#  
-  #.###.#                           #.###.#  
-  #.#....OA                       WB..#.#..ZH
-  #.###.#                           #.#.#.#  
-CJ......#                           #.....#  
-  #######                           #######  
-  #.#....CK                         #......IC
-  #.###.#                           #.###.#  
-  #.....#                           #...#.#  
-  ###.###                           #.#.#.#  
-XF....#.#                         RF..#.#.#  
-  #####.#                           #######  
-  #......CJ                       NM..#...#  
-  ###.#.#                           #.###.#  
-RE....#.#                           #......RF
-  ###.###        X   X       L      #.#.#.#  
-  #.....#        F   Q       P      #.#.#.#  
-  ###.###########.###.#######.#########.###  
-  #.....#...#.....#.......#...#.....#.#...#  
-  #####.#.###.#######.#######.###.###.#.#.#  
-  #.......#.......#.#.#.#.#...#...#...#.#.#  
-  #####.###.#####.#.#.#.#.###.###.#.###.###  
-  #.......#.....#.#...#...............#...#  
-  #############.#.#.###.###################  
-               A O F   N                     
-               A A D   M                     """
+# INPUT = """
+#              Z L X W       C
+#              Z P Q B       K
+#   ###########.#.#.#.#######.###############
+#   #...#.......#.#.......#.#.......#.#.#...#
+#   ###.#.#.#.#.#.#.#.###.#.#.#######.#.#.###
+#   #.#...#.#.#...#.#.#...#...#...#.#.......#
+#   #.###.#######.###.###.#.###.###.#.#######
+#   #...#.......#.#...#...#.............#...#
+#   #.#########.#######.#.#######.#######.###
+#   #...#.#    F       R I       Z    #.#.#.#
+#   #.###.#    D       E C       H    #.#.#.#
+#   #.#...#                           #...#.#
+#   #.###.#                           #.###.#
+#   #.#....OA                       WB..#.#..ZH
+#   #.###.#                           #.#.#.#
+# CJ......#                           #.....#
+#   #######                           #######
+#   #.#....CK                         #......IC
+#   #.###.#                           #.###.#
+#   #.....#                           #...#.#
+#   ###.###                           #.#.#.#
+# XF....#.#                         RF..#.#.#
+#   #####.#                           #######
+#   #......CJ                       NM..#...#
+#   ###.#.#                           #.###.#
+# RE....#.#                           #......RF
+#   ###.###        X   X       L      #.#.#.#
+#   #.....#        F   Q       P      #.#.#.#
+#   ###.###########.###.#######.#########.###
+#   #.....#...#.....#.......#...#.....#.#...#
+#   #####.#.###.#######.#######.###.###.#.#.#
+#   #.......#.......#.#.#.#.#...#...#...#.#.#
+#   #####.###.#####.#.#.#.#.###.###.#.###.###
+#   #.......#.....#.#...#...............#...#
+#   #############.#.#.###.###################
+#                A O F   N
+#                A A D   M                     """
 
 # process the input grid
 donut = np.array([list(row) for row in INPUT.splitlines() if row.strip()])
@@ -327,16 +327,17 @@ def recurse_part2(
             else:
                 recurse_part2(neigh, current_path_length + 1, current_level)
 
-    try:
-        # import sys
 
-        # sys.setrecursionlimit(10_000) # dangerous
-        recurse_part2(start_pos)
-        print(f"part 2: {shortest_path_length=}")
-    except RecursionError:
-        print(
-            "The maze is too large and triggers a RecursionError, let us switch to a BFS\n"
-        )
+try:
+    # import sys
+
+    # sys.setrecursionlimit(10_000) # dangerous
+    recurse_part2(start_pos)
+    print(f"part 2: {shortest_path_length=}")
+except RecursionError:
+    print(
+        "The maze is too large and triggers a RecursionError, let us switch to a BFS\n"
+    )
 
 
 # perform the search with a BFS
@@ -360,12 +361,13 @@ all_gates_ = inner_gates_ | outer_gates_
 st = nodes[0][start_pos]
 st.distance = 0
 queue.append(st)
-while queue:
+while queue:  # takes several min to run
     current_node: Node = queue.popleft()
     if current_node.distance > 11_008:
         raise ValueError("something is wrong")
-    if current_node.visited:
-        continue  # i don't understand why this can happen
+    # assert current_node.visited is False
+    # if current_node.visited:
+    #     continue  # i don't understand why this can happen
     # for gate_label in inner_gates:
     #     if current_node.location in inner_gates[gate_label]:
     #         print(f"Inner gate {gate_label}, {current_node.__dict__}")
@@ -388,8 +390,10 @@ while queue:
                 )
             ):
                 continue
-            if (current_node.location not in inner_gates_) or (
-                cand.location not in outer_gates_
+            if (
+                (current_node.location not in inner_gates_)
+                or (cand.location not in outer_gates_)
+                and cand not in queue
             ):
                 cand.distance = current_node.distance + 1
                 queue.append(cand)
@@ -400,7 +404,7 @@ while queue:
                 )[cand.location]
 
                 # assert next_.layer == current_node.layer + 1
-                if not next_.visited:
+                if not next_.visited and next_ not in queue:
                     next_.distance = current_node.distance + 1
                     queue.append(next_)
     else:
@@ -418,7 +422,7 @@ while queue:
                     {pos: Node(pos, current_node.layer + 1) for pos in neighbours},
                 )[cand.location]
                 # assert isinstance(next_, Node) and next_.layer == current_node.layer + 1
-                if not next_.visited:
+                if not next_.visited and next_ not in queue:
                     next_.distance = current_node.distance + 1
                     queue.append(next_)
             elif (
@@ -429,10 +433,10 @@ while queue:
                     {pos: Node(pos, current_node.layer - 1) for pos in neighbours},
                 )[cand.location]
                 # assert next_.layer == current_node.layer - 1 and isinstance(next_, Node)
-                if not next_.visited:
+                if not next_.visited and next_ not in queue:
                     next_.distance = current_node.distance + 1
                     queue.append(next_)
-            elif not cand.visited:  # staying at the same level
+            elif not cand.visited and cand not in queue:  # staying at the same level
                 cand.distance = current_node.distance + 1
                 queue.append(cand)
     current_node.visited = True
@@ -441,4 +445,4 @@ while queue:
 else:
     raise ValueError("Queue exhausted, this is impossible to solve")
 
-# 11008 is too high
+# 6300
