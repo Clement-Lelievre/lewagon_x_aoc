@@ -1,6 +1,11 @@
 import numpy as np
 from functools import partial
 
+# the first thing I thought about when reading the challenge was
+# implementing some bitmasks to do it efficiently
+# if I need to improve the perf then I'll consider this approach
+# https://dev.to/anurag629/the-power-of-bit-manipulation-how-to-solve-problems-efficiently-3p1h
+
 INPUT = """
 ..##.
 ..#..
@@ -72,5 +77,5 @@ class Eris:
         print("part 1:", current)
 
 
-E = Eris(INPUT)
-E.solve()
+Eris_part1 = Eris(INPUT)
+Eris_part1.solve()
