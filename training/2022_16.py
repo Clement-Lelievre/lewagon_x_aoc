@@ -1,5 +1,14 @@
 import re
 from copy import deepcopy
+from collections import deque
+from itertools import combinations, product
+
+# instructive remark by Peter Norvig: (https://github.com/norvig/pytudes/blob/main/ipynb/Advent-2022.ipynb)
+# "Conceptually this is a simple search problem: we move from room to room for 30 minutes,
+# opening valves as we go, trying to find the sequence of actions that maximizes the total flow.
+# Practically, I'm concerned about the size of the search state space.
+# With 30 minutes, 56 rooms, and 56 valves that can be either open or not,
+# there are 30 × 56 × 256 ≈ 10^20 states to consider. We're going to need some way of directing the search."
 
 INPUT = """Valve QE has flow rate=3; tunnels lead to valves OU, ME, UX, AX, TW
 Valve TN has flow rate=16; tunnels lead to valves UW, CG, WB
@@ -62,16 +71,16 @@ Valve NS has flow rate=23; tunnels lead to valves EU, DN
 Valve KD has flow rate=0; tunnels lead to valves BY, CJ
 """
 
-INPUT = """Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
-Valve BB has flow rate=13; tunnels lead to valves CC, AA
-Valve CC has flow rate=2; tunnels lead to valves DD, BB
-Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
-Valve EE has flow rate=3; tunnels lead to valves FF, DD
-Valve FF has flow rate=0; tunnels lead to valves EE, GG
-Valve GG has flow rate=0; tunnels lead to valves FF, HH
-Valve HH has flow rate=22; tunnel leads to valve GG
-Valve II has flow rate=0; tunnels lead to valves AA, JJ
-Valve JJ has flow rate=21; tunnel leads to valve II"""
+# INPUT = """Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+# Valve BB has flow rate=13; tunnels lead to valves CC, AA
+# Valve CC has flow rate=2; tunnels lead to valves DD, BB
+# Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+# Valve EE has flow rate=3; tunnels lead to valves FF, DD
+# Valve FF has flow rate=0; tunnels lead to valves EE, GG
+# Valve GG has flow rate=0; tunnels lead to valves FF, HH
+# Valve HH has flow rate=22; tunnel leads to valve GG
+# Valve II has flow rate=0; tunnels lead to valves AA, JJ
+# Valve JJ has flow rate=21; tunnel leads to valve II"""
 
 
 # Notes:
@@ -85,8 +94,8 @@ Valve JJ has flow rate=21; tunnel leads to valve II"""
 # rewarding valve so maybe the path will be longer than 14 units
 
 # extract valve info; a dict of dicts looks suitable to store it
-valve_data_pattern = re.compile("^Valve (\w+).*?(\d+).*?valves? (.*?)$", re.IGNORECASE)
-valves = [row for v in INPUT.splitlines() if (row := v.strip())]
+valve_data_pattern = re.compile(r"^Valve (\w+).*?(\d+).*?valves? (.*?)$", re.IGNORECASE)
+valves = (row for v in INPUT.splitlines() if (row := v.strip()))
 valve_dict = {}
 for valve in valves:
     valve_name, valve_power, valve_connections = (
@@ -103,57 +112,6 @@ for valve in valves:
 valves_of_interest = {k: fr for k, v in valve_dict.items() if (fr := v["flow rate"])}
 max_pressure_released = 0
 visited = set()
-best_path = None
-
-
-def explore_slow(
-    current_room: str,
-    time_left: int,
-    opened_valves: dict,
-    total_pressure_released: int,
-    current_path: list,
-) -> None:
-    """Slow version, because it also prints out the best path"""
-    global max_pressure_released, best_path
-    # assert time_left >= 0
-    if (current_state := (current_room, time_left, total_pressure_released)) in visited:
-        return
-    # if is_dominated(current_state):
-    #     return
-    visited.add(current_state)
-    current_path.append(current_state)
-    if time_left == 0 or len(opened_valves) == len(valves_of_interest):
-        if total_pressure_released > max_pressure_released:
-            best_path = current_path
-            max_pressure_released = total_pressure_released
-        return
-    if current_room in valves_of_interest and current_room not in opened_valves:
-        time_left -= 1
-        opened_valves[current_room] = time_left
-        total_pressure_released += time_left * valves_of_interest[current_room]
-        visited.add(current_state)
-        current_path.append((current_room, time_left, total_pressure_released))
-        if time_left == 0 or len(opened_valves) == len(valves_of_interest):
-            if total_pressure_released > max_pressure_released:
-                best_path = current_path
-                max_pressure_released = total_pressure_released
-            return
-    for next_room in valve_dict[current_room]["connections"]:
-        explore(
-            next_room,
-            time_left - 1,
-            deepcopy(opened_valves),
-            total_pressure_released,
-            deepcopy(current_path),
-        )
-
-
-# def is_dominated(state: tuple) -> bool:
-#     state_room, state_time_left, state_tpr = state
-#     return any(
-#         state_room == room and state_tpr == tpr and t >= state_time_left
-#         for room, t, tpr in visited
-#     )
 
 
 def explore(
@@ -162,7 +120,7 @@ def explore(
     opened_valves: dict[str, int],
     total_pressure_released: int,
 ) -> None:
-    global max_pressure_released, best_path
+    global max_pressure_released
     # assert time_left >= 0
     if (current_state := (current_room, time_left, total_pressure_released)) in visited:
         return  # actually it could be that this isn't even enough to tell a state from a different one!
@@ -186,11 +144,174 @@ def explore(
         )
 
 
+# uncomment the next two lines if you want to see the recursive version in action
 explore("AA", 30, {}, 0)
-print(max_pressure_released)  # 2077
+print(
+    f"Part 1 (with recursion): {max_pressure_released}"
+)  # 2077 on my input, 1651 on the test provided
 
 # my solution above works on every actual input I've come across (including mine of course), but not on the example input!
 # I think that's because I wrongly rule out some paths at the beginning of the function
 # so only half credit
 
+# redoing part 1, this time implementing a BFS
+
+
+class VolcanoMaze:
+    """Simulates the volcano maze described in the challenge.
+    Note: for part 2, while with 2 people it is important to take into account the fact
+    that opening twice the same valve should be prevented, I'll consider that both the elf and
+    the elephant may be inside the same room or tunnel at the same time, as this is not
+    specified in the text"""
+
+    def __init__(self, input_: str) -> None:
+        self.input_ = input_
+        self.valve_data_pattern = re.compile(
+            r"^Valve (\w+).*?(\d+).*?valves? (.*?)$", re.IGNORECASE
+        )
+        self.get_data()
+        self.valves_of_interest = {
+            k: fr for k, v in self.valve_dict.items() if (fr := v["flow rate"])
+        }
+
+    def get_data(self) -> None:
+        valves = (row for v in self.input_.splitlines() if (row := v.strip()))
+        valve_dict = {}
+        for valve in valves:
+            valve_name, valve_power, valve_connections = (
+                (regex_search := self.valve_data_pattern.search(valve)).group(1),
+                regex_search.group(2),
+                tuple(map(str.strip, regex_search.group(3).split(","))),
+            )
+            valve_dict[valve_name] = {
+                "flow rate": int(valve_power),
+                "connections": valve_connections,
+            }
+        self.valve_dict = valve_dict
+
+    def max_pressure_one_visitor(self) -> int:
+        total_pressures_released = set()
+        visited = set()
+        queue = (
+            deque()
+        )  # will store states as (room, time, total pressure released, valves opened)
+        # {'BB': 13, 'CC': 2, 'DD': 20, 'EE': 3, 'HH': 22, 'JJ': 21}
+        queue.append(("AA", 30, 0, set()))
+        while queue:
+            room, time_left, tpr, valves_opened = queue.popleft()
+            if any(
+                room == seen_room and time_left <= seen_time_left and tpr <= seen_tpr
+                for seen_room, seen_time_left, seen_tpr, _ in visited
+            ):
+                continue  # dominated state
+            if valves_opened == set(valves_of_interest) or time_left in (0, 1):
+                total_pressures_released.add(tpr)
+                continue  # we don't break as we want to explore every path
+            visited.add((room, time_left, tpr, frozenset(valves_opened)))
+            if (
+                room in self.valves_of_interest and room not in valves_opened
+            ):  # open the valve
+                time_left -= 1  # open valve
+                tpr += self.valves_of_interest[room] * time_left
+                valves_opened.add(room)
+                visited.add((room, time_left, tpr, frozenset(valves_opened)))
+            if time_left >= 1:
+                time_left -= 1  # travel to neighbouring room
+                for neigh in self.valve_dict[room]["connections"]:
+                    queue.append((neigh, time_left, tpr, valves_opened.copy()))
+        print(
+            f"Part 1 (with a BFS queue): {max(total_pressures_released, default = 0)}"
+        )  # 2077 on my input, 1651 on the test provided
+
+    def setup_to_tpr(self, path: tuple[tuple[str, int]]) -> int:
+        """From the description of a path as a tuple of (room_name, time_left after opening room valve)
+        computes and returns the total pressure released with that path
+
+        Args:
+            path (tuple): tuple of (room_name, time_left after opening room valve)
+
+        Returns:
+            int: the total pressure released with that path
+        """
+        return sum(
+            time_left * self.valve_dict[room]["flow rate"] for room, time_left in path
+        )
+
+    def max_pressure_two_visitors(self, training_time: int = 4) -> int:
+        all_opening_setups = set()
+        visited = set()
+        queue = deque()
+        queue.append(("AA", 30 - training_time, 0, {}))
+        while queue:
+            room, time_left, tpr, valves_opened = queue.popleft()
+            if any(
+                room == seen_room and time_left <= seen_time_left and tpr <= seen_tpr
+                for seen_room, seen_time_left, seen_tpr, _ in visited
+            ):
+                continue  # dominated state
+            visited.add((room, time_left, tpr, tuple(valves_opened.items())))
+            if set(valves_opened) == set(valves_of_interest) or time_left in (0, 1):
+                all_opening_setups.add(tuple(valves_opened.items()))
+                continue  # we don't break as we want to explore every path
+            if room in self.valves_of_interest and room not in valves_opened:
+                time_left -= 1  # open the valve
+                tpr += self.valves_of_interest[room] * time_left
+                valves_opened[room] = time_left
+                visited.add((room, time_left, tpr, tuple(valves_opened.items())))
+            if time_left >= 1:
+                time_left -= 1  # travel to neighbouring room
+                for neigh in self.valve_dict[room]["connections"]:
+                    queue.append((neigh, time_left, tpr, valves_opened.copy()))
+        # combine all couples of paths, accounting for common valves, and display the best score
+        max_tpr = 0
+        for path1, path2 in combinations(all_opening_setups, 2):
+            s1 = set(elem[0] for elem in path1)
+            s2 = set(
+                elem[0] for elem in path2
+            )  # set of valves opened in the first and second paths
+            common_valves = s1 & s2
+            if not common_valves:
+                tpr = self.setup_to_tpr(path1) + self.setup_to_tpr(path2)
+            else:
+                for dispatch in product((0, 1), repeat=len(common_valves)):
+                    d1, d2 = dict(path1), dict(path2)
+                    comm = common_valves.copy()
+                    for digit in dispatch:
+                        current_common_valve = comm.pop()
+                        if digit == 0:  # keep in d1
+                            timeleft = d2[current_common_valve]
+                            d2.pop(current_common_valve)
+                            for k in d2:
+                                if d2[k] < timeleft:
+                                    d2[k] += 1
+                        else:  # keep in d2
+                            timeleft = d1[current_common_valve]
+                            d1.pop(current_common_valve)
+                            for k in d1:
+                                if d1[k] < timeleft:
+                                    d1[k] += 1
+                    assert set(d1).isdisjoint(set(d2))
+                    tpr = self.setup_to_tpr(tuple(d1.items())) + self.setup_to_tpr(
+                        tuple(d2.items())
+                    )
+            if tpr > max_tpr:
+                max_tpr = tpr
+        print(
+            f"Part 2 (with a BFS queue): {max_tpr}"
+        )  # 2741 on my input, 1707 on the test provided
+
+
+V = VolcanoMaze(INPUT)
+V.max_pressure_one_visitor()
+
 # part 2
+# this time we are 2 exploring the maze, each having 26 minutes
+V.max_pressure_two_visitors()
+
+# my approach works on my input, but not on the test provided
+# this is likely because my approach does not try all possible paths, at least for part 2
+# for part 2, I build on two best paths regardless of constraints and then remove
+# common valves
+# I believe in doing so I miss some paths
+# this is somewhat unsatisfying, but Peter Norvig did the same
+# which is quite reassuring
