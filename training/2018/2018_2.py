@@ -1,0 +1,296 @@
+INPUT = """
+umdryebvlapkozostecnihjexg
+amdryebalapkozfstwcnrhjqxg
+umdcyebvlapaozfstwcnihjqgg
+ymdryrbvlapkozfstwcuihjqxg
+umdrsebvlapkozxstwcnihjqig
+umdryibvlapkohfstwcnfhjqxg
+umdryebvqapkozfatwcnihjqxs
+umzrpebvlapkozfshwcnihjqxg
+fmhryebvlapkozfstwckihjqxg
+umdryebvlahkozfstwcnizjrxg
+qmdryebvlapkozfslwcnihgqxg
+umdiyebjlapknzfstwcnihjqxg
+umdryebvlapkoqfstwcaihvqxg
+cmdryebvlapkpzfstwcnihjvxg
+umdryebvlakkozfstwcgihjixg
+umdryebvlasjozfstwcnihqqxg
+umdryebvladkozfsvwcnifjqxg
+umdrlebvlapaozfstwcniwjqxg
+umdryebvlhpkozrstwsnihjqxg
+umdryebvcapkozfqtwcnihjrxg
+ubdrykbvlapkowfstwcnihjqxg
+umdryebvldpkozfstwcnihtqsg
+umdryebvlapaozyutwcnihjqxg
+umdryibvlapkozfstdfnihjqxg
+umdryebvlapgozkstwznihjqxg
+umdrxebvlapkozfstwcngxjqxg
+umdryekvlapkozfstwclchjqxg
+nmdryebvlapkozjsewcnihjqxg
+umdryebvyapkozfstfcniheqxg
+umdfyebvlapkozfstwcnhhjpxg
+umdryelylupkozfstwcnihjqxg
+smdryebvlqpkozfstwcnihjdxg
+umdryebvlapaozfsuwcnihjqxc
+umdryebvlrzkozrstwcnihjqxg
+umdbycbvlapkojfstwcnihjqxg
+umdryebvlapkonfstwpnirjqxg
+uecryebvlapkozfstwcnihpqxg
+uqdryebvltpkozfstwcnihrqxg
+umdryebvlqsknzfstwcnihjqxg
+cmdryebvlapkocfstwcvihjqxg
+umdrkebvlapkozqsfwcnihjqxg
+umdryabveapkoifstwcnihjqxg
+ummrnehvlapkozfstwcnihjqxg
+umdryebvlxpkozfstwqnihjtxg
+umdryebvlagkozastwcnihjqxh
+umdryebvlatkozzhtwcnihjqxg
+umdryebvlcpkozfstwrnihjqvg
+umdryebvlapkozfsnwcnrhjcxg
+umdzyebvlypkozfstwcnibjqxg
+nmdryebvlvpkozbstwcnihjqxg
+uwdryebvlipkozfstwcnihvqxg
+umdraebvlavkozfstwcnihjqwg
+umdeyebvlspbozfstwcnihjqxg
+umdryxlvlapkozfstwcnihjqxu
+umdryegvlapkqzfstwcnirjqxg
+umdrupbvlapkozfstwcnihjqog
+imxryebvlapkxzfstwcnihjqxg
+umdrfebvlapkozowtwcnihjqxg
+umdreebvlapkozmstwczihjqxg
+undryebdlapkozbstwcnihjqxg
+umdryebvlapkpzfetwcnihjqxb
+ymdnyebvlapkozfstwinihjqxg
+umdryebvaapkozfstwcnihyqqg
+umdryebvlapkzzwsrwcnihjqxg
+umdrkebvlapkmzfskwcnihjqxg
+umdrmebvlapkozfsvwcnidjqxg
+umdlyehvlapkozfstwcnihjqkg
+umnryebvlrpkozfstwjnihjqxg
+uqdryebvlapxozfsawcnihjqxg
+vmdruebvlapkozfstwcnihjqqg
+umdryabviapkozistwcnihjqxg
+umdryebvlapkzzfstwfnihkqxg
+uvdryebvlapkozfsxwcuihjqxg
+umdlhebvlapkozfstwcnvhjqxg
+umdreebvlapkopfstjcnihjqxg
+umdryebvlazkomfstwynihjqxg
+kmdryebulapkoznstwcnihjqxg
+umdryebvxakkozfstwinihjqxg
+ukdryobvlapkozistwcnihjqxg
+umdryebveapkozfstwcnthjqgg
+mmdrtebvlapcozfstwcnihjqxg
+umdryebvlapkolistwnnihjqxg
+umdryebxlapkozfatwcnihjqxx
+uxdryebvlapkozfstwhniheqxg
+ufdryebvzapkozfstwcnbhjqxg
+amdryhbvlapkozfstwcnifjqxg
+umqryebvlaphozfstwcnihjqxn
+umdryebvlapkosfstfcnihjqxe
+gmkryebvlapkozfstwcnihjmxg
+umdrnebvlkpkozfstwcnihjnxg
+umdryebvrapkozfstmcndhjqxg
+umdryebvmapkozfstichihjqxg
+umdryesvnapkozestwcnihjqxg
+umeryhbvlapkozfstfcnihjqxg
+umdryedvbapkozfstwcnihqqxg
+umdryebllapzozfstwcnihjvxg
+umdcyebvlzdkozfstwcnihjqxg
+umdrybbvlapkbvfstwcnihjqxg
+umdrytbglapkozfsthcnihjqxg
+umdryebvlkpkozfsteclihjqxg
+umdntebvlapkmzfstwcnihjqxg
+lkdryebveapkozfstwcnihjqxg
+ymdryubvlapkozfstwbnihjqxg
+tmrryebvlapkozfstwcnqhjqxg
+umdryeovlaekonfstwcnihjqxg
+umiryeuvlapkozfstwcnihjwxg
+umdryebvlspvozwstwcnihjqxg
+umdrtebvlapkoznxtwcnihjqxg
+umvryebvlaphozfstwcnahjqxg
+umdryebvlapkozfstinniajqxg
+umdryebqlapkozfctwcnihjqxx
+umdryebvlapkbzfptwcnihjqvg
+umdryabviapkozistwcnihjqxd
+umdryrbvlapkezfstscnihjqxg
+umhryebvlapkozfstacnihxqxg
+umdxyelvlapkozfitwcnihjqxg
+umdryevvuapkozfstwcnihtqxg
+uydrypbvxapkozfstwcnihjqxg
+umdryebvlapkopfstwcnihzqxo
+uedryebvlapkozistwceihjqxg
+umdiyebvlapkozfgtwcnihjqxv
+ymdryebvlapkozfsticniqjqxg
+umbrkebvlapkozfslwcnihjqxg
+umdryebliapkozbstwcnihjqxg
+umvryebolapkozfstwcnihjqig
+umdryeavbackozfstwcnihjqxg
+umdryfbvlapsozfstwcnihaqxg
+umdqyebvlapkozfjtgcnihjqxg
+umdrjebvlaqkozfstwcyihjqxg
+umdryebklaqkozrstwcnihjqxg
+umdryebvpapkozfstwcpihjqjg
+uydryebhlawkozfstwcnihjqxg
+umdyyebvlapkozfstwcykhjqxg
+umdryebvlapkozfstwcnitjnxh
+umdzyebvlapkozfstwcnehyqxg
+mmcryebvlapkozfstwinihjqxg
+umdryebvlapuozfstwmvihjqxg
+umdryfbvlapkozqstwcnihjmxg
+umdryebslapsozfhtwcnihjqxg
+umdtyemvlapmozfstwcnihjqxg
+umdrxevvlapkozfytwcnihjqxg
+umdahebvlapjozfstwcnihjqxg
+umdryebvlapkozfstacnivjqxb
+umdryebvlzpkozfjtwcnihjyxg
+umdryebvlaqkozfstwcnisjqxu
+umdrydbvlapkozfsuwcnihjlxg
+umdryebvlapkomrstwcnihjqkg
+umdryebvlapcozfstmcnwhjqxg
+umdryebvlahkozfstwcibhjqxg
+gmdrzebvlapkozlstwcnihjqxg
+umdryebvlapkezfsswcnrhjqxg
+umdryebvlapkoqfitwcgihjqxg
+umdrnebvlapkozfsiwcninjqxg
+umdryebvlapkozfsrwckohjqxg
+umdryebtlapkomfstwcnihjexg
+umdryxbvlapjozfstwcnihoqxg
+umdpyebvlapkosustwcnihjqxg
+umdryebvlapkvzfawwcnihjqxg
+umhnyebvlaikozfstwcnihjqxg
+umdryebvlagkozfstvknihjqxg
+uodryebjlapkoxfstwcnihjqxg
+umdryefdlapkozfstwcnyhjqxg
+umprmebvtapkozfstwcnihjqxg
+umdhyebvlapoozfstwcnihjqgg
+uddryebvidpkozfstwcnihjqxg
+umdryebtlapkozfetwfnihjqxg
+umdbyebolapkozfstwcoihjqxg
+umdryebvlapkonfstwcnihjpxo
+umdryebvlapkohfstwcnihjqwk
+umdryebolalkkzfstwcnihjqxg
+updryebvxapkozfstwcnshjqxg
+umdryebvlapkovfktwcnuhjqxg
+umdrqrbvlppkozfstwcnihjqxg
+umdrylgvlapkozfstwrnihjqxg
+umdryebvlapkozfstxcnihbqig
+uvdryeevlappozfstwcnihjqxg
+zmdryebvlapkozfstwcnihqqxt
+umdryebvlapvozfstwenihiqxg
+umdryebvlbpkozfsgwcnihjlxg
+umdryhbvlapkozfstwcnihtqxw
+umdreecvlapkozwstwcnihjqxg
+umwryebvlapkoztsmwcnihjqxg
+ukdryebvfapkozrstwcnihjqxg
+umdrylbdlamkozfstwcnihjqxg
+umdryebvlapoozwsmwcnihjqxg
+umdryebvlapkozfqtwcnnzjqxg
+umdryekvlapktzfstwcnohjqxg
+umdryebvlapkozfstwcnihjwqo
+umdrrebflapkogfstwcnihjqxg
+umdryevvlapkozfztwctihjqxg
+umdrybbvlapkozfstwcnihxaxg
+umdryebvlapkozfsowcnphjqag
+smdryebvlapbozfitwcnihjqxg
+umdryebvtapiozfstwcnihjqxe
+umdryebjlakkozfstwccihjqxg
+umdryebvlapdozfshwckihjqxg
+umnryebvlapiozfstwcnihlqxg
+umdrycbvlapkjzfsnwcnihjqxg
+umdryebvyaprozjstwcnihjqxg
+ucdryebvlapkozfstwomihjqxg
+umdryebvlagklzfstwcnihjqyg
+umdryebvladkozfstwcnihjqjh
+umdrwebvlapkozfstwdnicjqxg
+umdryebvlapkmzfstwcniheqxr
+umdryebvlapkjzfstwcviheqxg
+umdrvebvlapkozfstwcbihjqmg
+umdrfebvlapkoffstwcnihsqxg
+umdryebvtarkazfstwcnihjqxg
+umdryebvlapkozfstwcfihjcng
+umdryebvlapkktostwcnihjqxg
+uedryeevlapkozfstwcniijqxg
+bmdryebylapkozfstwcnihjqog
+umdryebvlmpkoztstwcnihjqeg
+umdryepvlarkohfstwcnihjqxg
+uwdryebvlapklzfstzcnihjqxg
+umdryebklapkozfsswcbihjqxg
+umdtyeavlapkozfstwsnihjqxg
+umdryebvaapkozfhtfcnihjqxg
+umdrpebvlapuozfstwvnihjqxg
+umdryebvlapkozffmwcniijqxg
+uqdpyebvlapkozfstwfnihjqxg
+umdryebvlapuozdstwcnihjhxg
+tmdryhbvlapkozfptwcnihjqxg
+umdryevvmapkozfstwcnihjgxg
+umdryeuvlapmozfstwcnihjwxg
+umdryebqlzpkozfbtwcnihjqxg
+umdryebvsapkozystwcniqjqxg
+imdryebvlapkozfscwinihjqxg
+umdryebvlzpkozustwcnmhjqxg
+umdrypbvlapbozfsnwcnihjqxg
+bmdryebvlapqoznstwcnihjqxg
+umdrfebvlapaozfstwcnihxqxg
+umdiyebvxapkozfstwcnchjqxg
+umdrygbvlapkozfstwcnizjqxz
+amdryedvlapkozfstwcnihfqxg
+umdryebvvapzozfstwcnihjgxg
+undryebvlapkzzfstjcnihjqxg
+umdryvbvlapgozfrtwcnihjqxg
+umdrkebvlapkozfstwcnihihxg
+umdryebvrppkozfsowcnihjqxg
+umdryebvlapktzfsdwclihjqxg
+otdrdebvlapkozfstwcnihjqxg
+mmdryebvlazkozfxtwcnihjqxg
+umdryebvlapkozfsbwtnihjqxa
+imqryebvrapkozfstwcnihjqxg
+umdryebvlrpkozfscwcnihjqlg
+uedryebvlapkoznsvwcnihjqxg
+umdryebvlqpkozfstscnihjqxj
+umerycbvlapkozfstwcnihjqxh
+umdkykbvlapjozfstwcnihjqxg
+"""
+from tqdm import tqdm
+from itertools import combinations
+
+inp = [word for word in INPUT.splitlines() if word]
+two_count = 0
+three_count = 0
+
+for word in tqdm(inp):
+    s = set(word)
+    for letter in s:
+        if word.count(letter) == 2:
+            two_count += 1
+            break
+    for letter in s:
+        if word.count(letter) == 3:
+            three_count += 1
+            break
+print(two_count * three_count)
+
+# part 2
+
+
+def differ_by_exactly_one_char(str1: str, str2: str) -> bool:
+    """returns whether str1 and str2 differ by exactly 1 character, at the same position
+    ex: differ_by_exactly_one_char('abc', 'aaa') -> False
+        differ_by_exactly_one_char('abc', 'aac') -> True
+    """
+    # if len(str1) != len(str2): return False # commented out to gain time as all the inputs are the same length
+    nb_diffs = sum(str1[i] != str2[i] for i in range(len(str1)))
+    return False if nb_diffs != 1 else True
+
+
+def find_diff_letter(str1: str, str2: str):
+    for i in range(len(str1)):
+        if str1[i] != str2[i]:
+            return str1[:i] + str2[i + 1 :]
+
+
+for str1, str2 in combinations(inp, 2):
+    if differ_by_exactly_one_char(str1, str2):
+        print(find_diff_letter(str1, str2))
+        break
+
+# there was no need for optimization as this ran in under a second
