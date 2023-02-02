@@ -160,18 +160,6 @@ while queue:
                 new_time,
                 new_equipment,
             )
-            # add state to the queue only if not dominated
-            if (
-                min(
-                    (
-                        time_
-                        for _, loc, time_, _ in visited
-                        if loc == (x_neigh, y_neigh)
-                    ),
-                    default=float("inf"),
-                )
-                > new_time
-            ):
-                heapq.heappush(queue, new_state)
+            heapq.heappush(queue, new_state)
 
 print(f"part 2: {min_time=}")
