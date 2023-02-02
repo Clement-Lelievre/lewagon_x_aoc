@@ -1,5 +1,6 @@
 import heapq
 from functools import cache
+import numpy as np
 
 
 DEPTH = 5616
@@ -64,7 +65,10 @@ print("part 1:", sum(get_all_region_types(TARGET).values()))
 
 @cache
 def heuristic(
-    pt1: tuple[int, int], time_spent: int, pt2: tuple[int, int] = TARGET
+    pt1: tuple[int, int],
+    time_spent: int,
+    coeff: float = 5.2,
+    pt2: tuple[int, int] = TARGET,
 ) -> int:
     """The heuristic function for my priority queue. It uses the Manhattan distance to the target location combined
     with a penalty related to the estimated number of gear switches ahead
@@ -79,9 +83,14 @@ def heuristic(
     """
     x1, y1 = pt1
     x2, y2 = pt2
-    return (abs(x1 - x2) + abs(y1 - y2)) * (
-        TRAVEL_TIME + SWITCH_GEAR_TIME * 2 / 3
-    ) + time_spent
+    return time_spent + (abs(x1 - x2) + abs(y1 - y2)) * SWITCH_GEAR_TIME / coeff
+
+
+@cache
+def manhattan_dist(pt1, pt2=TARGET):
+    x1, y1 = pt1
+    x2, y2 = pt2
+    return abs(x1 - x2) + abs(y1 - y2)
 
 
 # step 1 : compute all region types as in part 1, with an (arbitrary) margin in case we
@@ -93,6 +102,7 @@ ALLOWED_EQUIPMENTS = {  # using a frozenset is not mandatory, but it makes the c
     1: frozenset((0, 2)),
     2: frozenset((0, 1)),
 }  # keys are region types (rocky 0, wet 1, narrow 2), values are allowed equipments
+# (0 : neither, 1 : torch, 2: climbing gear) in this region type
 REGION_TYPES = get_all_region_types(
     (TARGET[0] + MARGIN, TARGET[1] + MARGIN)
 )  # after checking, there is a good balance between all 3 types
@@ -105,7 +115,6 @@ SWITCH_GEAR_TIME = 7
 visited = set()  # will store seen states (manhattan_dist, (x, y), time, equipment)
 queue = []
 
-# (0 : neither, 1 : torch, 2: climbing gear) in this region type
 
 queue.append(
     (heuristic(ENTRANCE, INITIAL_TIME), ENTRANCE, INITIAL_TIME, INITIAL_EQUIPMENT)
@@ -116,7 +125,7 @@ while queue:
     heuristic_val, current_region, current_time, current_equipment = heapq.heappop(
         queue
     )
-    if min_time <= current_time:
+    if min_time <= current_time + manhattan_dist(current_region):
         continue  # I can already discard this state based on time spent
     if (
         heuristic_val,
@@ -145,14 +154,24 @@ while queue:
                 + (0 if new_equipment == current_equipment else SWITCH_GEAR_TIME)
             )
             new_heuristic_val = heuristic((x_neigh, y_neigh), new_time)
+            new_state = (
+                new_heuristic_val,
+                (x_neigh, y_neigh),
+                new_time,
+                new_equipment,
+            )
+            # add state to the queue only if not dominated
             if (
-                new_state := (
-                    new_heuristic_val,
-                    (x_neigh, y_neigh),
-                    new_time,
-                    new_equipment,
+                min(
+                    (
+                        time_
+                        for _, loc, time_, _ in visited
+                        if loc == (x_neigh, y_neigh)
+                    ),
+                    default=float("inf"),
                 )
-            ) not in visited:
+                > new_time
+            ):
                 heapq.heappush(queue, new_state)
 
 print(f"part 2: {min_time=}")
