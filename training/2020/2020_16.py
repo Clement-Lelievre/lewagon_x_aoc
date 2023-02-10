@@ -1,4 +1,6 @@
 import re
+from functools import reduce
+from collections import defaultdict
 
 TEST_INPUT = """
 class: 1-3 or 5-7
@@ -279,7 +281,7 @@ nearby tickets:
 103,389,944,470,873,397,167,423,168,75,700,487,738,707,208,819,793,73,88,317
 """
 
-RANGES_PAT = re.compile(r"^([a-z]+):\s(\d+)-(\d+) or (\d+)-(\d+)$")
+RANGES_PAT = re.compile(r"^([a-z\s]+):\s(\d+)-(\d+) or (\d+)-(\d+)$")
 TICKETS = re.compile(r"^((\d+),?)+\s*$")
 
 
@@ -294,21 +296,18 @@ def get_ranges_dict(input_: str) -> dict:
     return ranges_dict
 
 
-def get_nearby_tickets(input_: str) -> frozenset:
-    return frozenset(
-        [
-            tuple(map(int, search.group().split(",")))
-            for row in input_.splitlines()
-            if (search := TICKETS.search(row)) is not None
-        ][
-            1:
-        ]  # drop my ticket
-    )
+def get_tickets(input_: str) -> frozenset:
+    all_tickets = [
+        tuple(map(int, search.group().split(",")))
+        for row in input_.splitlines()
+        if (search := TICKETS.search(row)) is not None
+    ]
+    return all_tickets[0], frozenset(all_tickets[1:])
 
 
 def get_error_rate(input_: str) -> int:
     error_rate = 0
-    nearby_tickets = get_nearby_tickets(input_)
+    _, nearby_tickets = get_tickets(input_)
     allowed_ranges = get_ranges_dict(input_)
     for ticket in nearby_tickets:
         for val in ticket:
@@ -318,6 +317,61 @@ def get_error_rate(input_: str) -> int:
 
 
 assert get_error_rate(TEST_INPUT) == 71
-print(get_error_rate(INPUT))
+print("part 1:", get_error_rate(INPUT))
 
 # part 2
+# now I need to include my ticket (which is assumed to be valid), and to discard invalid tickets from the previous part
+def get_valid_tickets(input_: str) -> set[tuple[int]]:
+    valid_tickets = set()
+    _, nearby_tickets = get_tickets(input_)
+    allowed_ranges = get_ranges_dict(input_)
+    for ticket in nearby_tickets:
+        for val in ticket:
+            if all(val not in allowed_ranges[k] for k in allowed_ranges):
+                break
+        else:
+            valid_tickets.add(ticket)
+    return valid_tickets
+
+
+valid_tickets = get_valid_tickets(INPUT)
+allowed_ranges = get_ranges_dict(INPUT)
+# reorganisze the valid tickets data: by field instead of by ticket
+data = [[ticket[i] for ticket in valid_tickets] for i in range(len(allowed_ranges))]
+field_candidates = defaultdict(list)
+for ind, field_data in enumerate(data):
+    for field_name, field_range in allowed_ranges.items():
+        if all(val in field_range for val in field_data):
+            field_candidates[field_name].append(ind)  # it's a candidate
+
+
+# print(field_candidates)
+actual_fields = {}
+nb_fields = len(allowed_ranges)
+while len(actual_fields) < nb_fields:
+    for field, candidates in field_candidates.items():
+        if len(candidates) == 1:
+            actual_fields[field] = candidates[0]
+            field_candidates.pop(field)
+            for field in field_candidates:
+                # if field in field_candidates[field]:
+                field_candidates[field].remove(candidates[0])
+            break  # break to avoid changing the dict while iterating over it,
+        # which would raise a "RuntimeError: dictionary changed size during iteration"
+
+my_ticket, _ = get_tickets(INPUT)
+my_ticket_dict = {
+    field_name: my_ticket[field_nb] for field_name, field_nb in actual_fields.items()
+}
+
+print(
+    "part 2:",
+    reduce(
+        lambda x, y: x * y,
+        [
+            val
+            for field_name, val in my_ticket_dict.items()
+            if field_name.startswith("departure")
+        ],
+    ),
+)
