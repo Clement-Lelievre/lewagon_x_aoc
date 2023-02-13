@@ -1,6 +1,8 @@
 import re
 from collections import defaultdict
 from functools import cache
+from itertools import combinations
+
 
 INPUT_TEST = """pos=<0,0,0>, r=4
 pos=<1,0,0>, r=1
@@ -1013,7 +1015,7 @@ pos=<34909464,33009256,81582168>, r=64863429
 pos=<54309320,32025673,46656637>, r=50321330
 pos=<44162848,15688671,84305371>, r=94160675"""
 
-NUMBERS_PAT = re.compile(r"[-0-9]+")
+NUMBERS_PAT = re.compile(r"[-\d]+")
 
 
 def get_nanobots(input_: str) -> list[tuple[int]]:
@@ -1041,12 +1043,12 @@ def solve_part1(input_: str) -> int:
 
 
 assert solve_part1(INPUT_TEST) == 7
-print(solve_part1(INPUT))
+print("part 1:", solve_part1(INPUT))
 
 # part 2
-# my plan: construct all (x,y,z) after parsing the input and identifying the min/max x , y and z
-# iterate over this list of coordinates and find the one(s) that is/are in the range of as many nanobots as possible
-# finally, find the best candidate based on its manhattan distance
+# my plan: iterate over all the nanobots, generating for each all the in-range cooridnates
+# store in a defaultdict the count of cooridnates
+# eventually find the max coords and identify the best one by minimizing the manhattan distance
 
 INPUT_TEST = """pos=<10,12,12>, r=2
 pos=<12,14,12>, r=2
@@ -1055,29 +1057,75 @@ pos=<14,14,14>, r=6
 pos=<50,50,50>, r=200
 pos=<10,10,10>, r=5"""
 
+DUMMY_INPUT_TEST = """pos=<0,0,0>, r=2
+pos=<0,1,0>, r=3
+pos=<140,143,139>, r=10
+pos=<140,140,140>, r=6"""  # 2 groups of linked bots
 
-def distance_from_best_pos(input_: str) -> int:
+
+def get_groups(input_: str) -> set[frozenset[tuple[int]]]:
+    """returns the largest group(s) of nanobots that all have at least one nanobot in range within the group
+
+    Args:
+        input_ (str): the input string
+
+    Returns:
+        set[frozenset[tuple[int]]]: a set containing one or more frozenset of "connected" nanobots
+    """
     nanobots = get_nanobots(input_)
-    all_pos = defaultdict(int)
-    positions = set()
-    for row in input_.splitlines():
-        if numbers := NUMBERS_PAT.findall(row):
-            x, y, z, _ = map(int, numbers)
-            positions.add((x, y, z))
-    min_x = min(pos[0] for pos in positions)
-    min_y = min(pos[1] for pos in positions)
-    min_z = min(pos[2] for pos in positions)
-    max_x = max(pos[0] for pos in positions)
-    max_y = max(pos[1] for pos in positions)
-    max_z = max(pos[2] for pos in positions)
-    for x in range(min_x, max_x + 1):
-        for y in range(min_y, max_y + 1):
-            for z in range(min_z, max_z + 1):
-                current_pos = (x, y, z)
-                for pos, radius in nanobots:  # yeah, that's a lot of looping...
-                    if manhattan_dist(current_pos, pos) <= radius:
-                        all_pos[current_pos] += 1
-    print([k for k in all_pos if all_pos[k] == max(all_pos.values())])
+    pos_count = defaultdict(set)
+    for bot1, bot2 in combinations(nanobots, 2):
+        if overlap(*bot1, *bot2):
+            pos_count[bot1].add(bot2)
+            pos_count[bot2].add(bot1)
+    max_nb_in_range = max(map(len, pos_count.values()))
+    overlapping_bots = {
+        frozenset(linked_bot_center | {center})
+        for center, linked_bot_center in pos_count.items()
+        if len(linked_bot_center) == max_nb_in_range
+    }
+    print(
+        f"{len(overlapping_bots)} groups of linked nanobots found, vs a total of {len(input_.splitlines())} nanobots"
+    )
+    return overlapping_bots
 
 
-assert distance_from_best_pos(INPUT_TEST) == 36
+def overlap(pos1: tuple[int], radius1: int, pos2: tuple[int], radius2: int) -> bool:
+    """Helper function that returns whether the shapes centered respectively on pos1 and pos2,
+    and with a respective radius of radius1 and radius2, share some overlapping coordinates
+
+    Args:
+        pos1 (tuple[int]): _description_
+        radius1 (int): _description_
+        pos2 (tuple[int]): _description_
+        radius2 (int): _description_
+
+    Returns:
+        bool: _description_
+    """
+    return manhattan_dist(pos1, pos2) <= radius1 + radius2
+
+
+def exterior_points(pos: tuple[int], radius: int) -> set[tuple[int]]:
+    """returns the set of all the points that are at a distance of radius from pos (the center of the shape)
+
+    Args:
+        pos (tuple[int]): _description_
+        radius (int): _description_
+
+    Returns:
+        set[tuple[int]]: _description_
+    """
+    x, y, z = pos
+    for x_ in range(x - radius, x + radius + 1):
+        for y_ in range(y - radius, y + radius + 1):
+            for z_ in range(z - radius, z + radius + 1):
+                if manhattan_dist((x_, y_, z_), (x, y, z)) == radius:
+                    yield x_, y_, z_
+
+
+groups = get_groups(INPUT_TEST)
+# part 2 not solved, and judging by what I read on the reddit for that day, it's a tough one
+
+
+# assert distance_from_best_pos(INPUT_TEST) == 36

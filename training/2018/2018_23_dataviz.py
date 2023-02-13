@@ -8,15 +8,9 @@ import plotly.express as px
 import pandas as pd
 
 
-INPUT_TEST = """pos=<0,0,0>, r=4
-pos=<1,0,0>, r=1
-pos=<4,0,0>, r=3
-pos=<0,2,0>, r=1
-pos=<0,5,0>, r=3
-pos=<0,0,3>, r=1
-pos=<1,1,1>, r=1
-pos=<1,1,2>, r=1
-pos=<1,3,1>, r=1"""
+INPUT_TEST = """pos=<1,0,0>, r=4
+pos=<0,0,6>, r=1
+pos=<0,-8,0>, r=3"""
 
 
 class Nanobots:
@@ -71,7 +65,12 @@ class Nanobots:
 
     def plot_in_range(self) -> None:
         fig = px.scatter_3d(
-            pd.DataFrame(self.in_range_coords), x="x", y="y", z="z", color="center"
+            pd.DataFrame(self.in_range_coords),
+            x="x",
+            y="y",
+            z="z",
+            color="center",
+            title="The bots and their respective reach",
         )
         fig.show()
 
