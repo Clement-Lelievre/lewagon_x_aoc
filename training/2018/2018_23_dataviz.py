@@ -25,7 +25,6 @@ class Nanobots:
     NUMBERS_PAT = re.compile(r"[-\d]+")
 
     def __init__(self, input_: str) -> None:
-        self.regex = re.compile(r"[-\d]+")
         self.get_nanobots(input_)
         self.get_in_range_coords()
 
