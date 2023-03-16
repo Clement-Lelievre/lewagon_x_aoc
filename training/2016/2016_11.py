@@ -12,17 +12,17 @@ from typing import Generator
 
 logging.basicConfig(level=logging.INFO)
 
-INPUT_TEST = """The first floor contains a hydrogen-compatible microchip and a 
+INPUT_TEST = """The first floor contains a hydrogen-compatible microchip and a
 lithium-compatible microchip.
 The second floor contains a hydrogen generator.
 The third floor contains a lithium generator.
 The fourth floor contains nothing relevant."""
 
-INPUT = """The first floor contains a thulium generator, a thulium-compatible 
+INPUT = """The first floor contains a thulium generator, a thulium-compatible
 microchip, a plutonium generator, and a strontium generator.
-The second floor contains a plutonium-compatible microchip and a 
+The second floor contains a plutonium-compatible microchip and a
 strontium-compatible microchip.
-The third floor contains a promethium generator, a promethium-compatible 
+The third floor contains a promethium generator, a promethium-compatible
 microchip, a ruthenium generator, and a ruthenium-compatible microchip.
 The fourth floor contains nothing relevant.
 """
@@ -53,7 +53,7 @@ class GeneratorLab:
     def __init__(self, input_: str) -> None:
         self.input_: str = input_
         self.find_nb_generators()
-        self.TARGET: self.State = (
+        self.TARGET: GeneratorLab.State = (
             frozenset(),
             frozenset(),
             frozenset(),
@@ -76,7 +76,7 @@ class GeneratorLab:
         )
         return self.nb_gen
 
-    def state_is_valid(self, state: State) -> bool:
+    def state_is_valid(self, state: State | frozenset[int]) -> bool:
         """Checks that a given state is valid, that is no chip is going to be fried
 
         Args:
@@ -85,7 +85,9 @@ class GeneratorLab:
         Returns:
             bool: whether `state` is valid
         """
-        for floor in state:
+        if isinstance(state, frozenset):  # the data for just one floor was provided
+            state = (state,)
+        for floor in state:  # a full state was provided (all four floors in a tuple)
             chips = {elem for elem in floor if elem % 2}
             generators = floor - chips - {0}  # discard the elevator
             if any(chip + 1 not in generators and generators for chip in chips):
@@ -95,7 +97,7 @@ class GeneratorLab:
     def make_neighbor_states(
         self, state: State
     ) -> Generator[tuple[int, State], None, None]:
-        """Generates all neighboring states, as well as the elevator distance
+        """Generates all legal neighboring states, as well as the elevator distance
         required to reach them
 
         Args:
@@ -117,14 +119,23 @@ class GeneratorLab:
                 combinations(items_excl_elevator, 1),
                 combinations(items_excl_elevator, 2),
             ):
-                elevator_dist = abs(new_floor - elev_floor)
-                new_state = list(state)  # I have to make it mutable
-                to_move = set(
-                    [0, *comb]
-                )  # strange that this works, as these are frozensets
-                new_state[elev_floor] -= to_move
-                new_state[new_floor] |= to_move
-                yield elevator_dist, tuple(new_state)
+                to_move = frozenset([0, *comb])
+                if not self.state_is_valid(state[elev_floor] - to_move):
+                    continue
+                # before yielding a neighbor state, make sure it is legal to do so (at each intermediate floor)
+                for traversed_floor in set(
+                    range(min(new_floor, elev_floor), max(new_floor, elev_floor) + 1)
+                ) - set([elev_floor]):
+                    if not self.state_is_valid(state[traversed_floor] | to_move):
+                        break
+                else:
+                    elevator_dist = abs(new_floor - elev_floor)
+                    new_state = list(state)  # I have to make it mutable
+                    new_state[elev_floor] -= to_move
+                    new_state[new_floor] |= to_move
+                    yield elevator_dist, tuple(
+                        new_state
+                    )  # make it hashable again, for storage purposes
 
     def heuristic(self, state: State) -> int:
         """An estimate of the number of moves needed to move everything to top
@@ -138,10 +149,28 @@ class GeneratorLab:
         )
         return math.ceil(total / 2)  # Can move two items in one move
 
-    def solve_old(self, initial_state: State) -> int:
+    def reconstruct_path(self, came_from: dict[State, State]) -> list[State]:
+        """Reconstructs the full path from a list of 'came from' info
+
+        Args:
+            came_from (dict[State, State]): a dict storing the came from info
+
+        Returns:
+            list[State]: the nodes in a list
+        """
+        current = self.TARGET
+        path = [current]
+        while (prev := came_from[current]) is not None:
+            path.append(prev)
+            current = prev
+        path.reverse()
+        return path
+
+    def solve_fifo(self, initial_state: State) -> int:
         """I decided not to code the REGEX-based parser and function that builds the initial state from the text,
         so somewhat artificially ths function expects the initial_state manually built, and the input text
         to detect the number of generators. Obviously this could be optimized and detected direclty from the `initial_state`
+        This method solves the problem using a FIFO queue
 
         Args:
             initial_state (tuple): a tuple of frozensets containing chips, the elevator, and generators
@@ -175,10 +204,11 @@ class GeneratorLab:
             raise Exception("Unreachable")
         return dist
 
-    def solve(self, initial_state: State) -> int:
+    def solve_pqueue(self, initial_state: State, verbose: bool = False) -> int:
         """I decided not to code the REGEX-based parser and function that builds the initial state from the text,
         so somewhat artificially ths function expects the initial_state manually built, and the input text
         to detect the number of generators. Obviously this could be optimized and detected direclty from the `initial_state`
+        Uses a priority queue (A*)
 
         Args:
             initial_state (tuple): a tuple of frozensets containing chips, the elevator, and generators
@@ -192,22 +222,29 @@ class GeneratorLab:
         """
         starttime = time()
         seen = set()
+        came_from: dict = {}
+        came_from[initial_state] = None
         queue: PriorityQueue = PriorityQueue()
         queue.put(
             (0, 0, initial_state)
         )  # (estimated remaining nb of moves, distance, floor states)
         while not queue.empty():
             _, dist, current_state = queue.get()
-            if current_state in seen or not self.state_is_valid(current_state):
-                continue
             if current_state == self.TARGET:
                 logging.info(
                     f"{dist} solved in {round(time() - starttime, 1)} seconds with a priority queue"
                 )
+                if verbose:
+                    logging.info("Here is the path taken:")
+                    for step in self.reconstruct_path(came_from):
+                        logging.info(step)
                 break
             seen.add(current_state)
             #  add neighbours to the queue
             for elevator_dist, neigh in self.make_neighbor_states(current_state):
+                if neigh in seen:
+                    continue
+                came_from[neigh] = current_state
                 queue.put((self.heuristic(neigh), dist + elevator_dist, neigh))
         else:
             raise Exception("Unreachable")
@@ -216,7 +253,7 @@ class GeneratorLab:
 
 if __name__ == "__main__":
     # part 1
-    # functional test
+    # test
     GLTEST = GeneratorLab(INPUT_TEST)
     assert GLTEST.find_nb_generators() == 2
     INITIAL_STATE_TEST: GeneratorLab.State = (
@@ -226,9 +263,10 @@ if __name__ == "__main__":
         frozenset(),
     )
     assert GLTEST.state_is_valid(INITIAL_STATE_TEST)
-    assert GLTEST.solve_old(INITIAL_STATE_TEST) == 11
-    assert GLTEST.solve(INITIAL_STATE_TEST) == 11
-    # # my actual input
+    assert GLTEST.solve_fifo(INITIAL_STATE_TEST) == 11
+    assert GLTEST.solve_pqueue(INITIAL_STATE_TEST) == 11
+
+    # my actual input
     GL = GeneratorLab(INPUT)
     assert GL.find_nb_generators() == 5
     INITIAL_STATE: GeneratorLab.State = (
@@ -238,16 +276,17 @@ if __name__ == "__main__":
         frozenset(),
     )
     assert GL.state_is_valid(INITIAL_STATE)
-    GL.solve(INITIAL_STATE)  # works, but slow
+    GL.solve_pqueue(INITIAL_STATE)
 
     # part 2
     # my actual input
-    # GL_P2 = GeneratorLab(INPUT_P2)
-    # INITIAL_STATE_P2: tuple = (
-    #     frozenset([0, 2, 1, 4, 6, 11, 12, 13, 14]),
-    #     frozenset([3, 5]),
-    #     frozenset([8, 7, 10, 9]),
-    #     frozenset(),
-    # )
-    # assert GL_P2.state_is_valid(INITIAL_STATE_P2)
-    # GL_P2.solve(INITIAL_STATE_P2)  # works, but slow
+    GL_P2 = GeneratorLab(INPUT_P2)
+    assert GL_P2.find_nb_generators() == 7
+    INITIAL_STATE_P2: GeneratorLab.State = (
+        frozenset([0, 2, 1, 4, 6, 11, 12, 13, 14]),
+        frozenset([3, 5]),
+        frozenset([8, 7, 10, 9]),
+        frozenset(),
+    )
+    assert GL_P2.state_is_valid(INITIAL_STATE_P2)
+    GL_P2.solve_pqueue(INITIAL_STATE_P2)
