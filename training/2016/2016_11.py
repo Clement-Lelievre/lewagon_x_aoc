@@ -193,7 +193,7 @@ class GeneratorLab:
                 continue
             if current_state == self.TARGET:
                 logging.info(
-                    f"{dist} solved in {round(time() - starttime, 1)} seconds with a queue (FIFO)"
+                    f"{dist=}, solved in {round(time() - starttime, 1)} seconds with a queue (FIFO)"
                 )
                 break
             seen.add(current_state)
@@ -234,7 +234,7 @@ class GeneratorLab:
             _, dist, current_state = queue.get()
             if current_state == self.TARGET:
                 logging.info(
-                    f"{dist} solved in {round(time() - starttime, 1)} seconds with a priority queue"
+                    f"{dist=}, solved in {round(time() - starttime, 1)} seconds with a priority queue"
                 )
                 if verbose:
                     logging.info("Here is the path taken:")
@@ -268,28 +268,47 @@ if __name__ == "__main__":
     assert GLTEST.solve_fifo(INITIAL_STATE_TEST) == 11
     assert GLTEST.solve_pqueue(INITIAL_STATE_TEST) == 11
 
-    # my actual input
-    GL = GeneratorLab(INPUT)
-    assert GL._find_nb_generators() == 5
+    # # my actual input
+    # GL = GeneratorLab(INPUT)
+    # assert GL._find_nb_generators() == 5
+    # INITIAL_STATE: GeneratorLab.State = (
+    #     frozenset([0, 2, 1, 4, 6]),
+    #     frozenset([3, 5]),
+    #     frozenset([8, 7, 10, 9]),
+    #     frozenset(),
+    # )
+    # assert GL._state_is_valid(INITIAL_STATE)
+    # GL.solve_pqueue(INITIAL_STATE)
+
+    # # part 2
+    # # no example is provided
+    # # my actual input
+    # GL_P2 = GeneratorLab(INPUT_P2)
+    # assert GL_P2._find_nb_generators() == 7
+    # INITIAL_STATE_P2: GeneratorLab.State = (
+    #     frozenset([0, 2, 1, 4, 6, 11, 12, 13, 14]),
+    #     frozenset([3, 5]),
+    #     frozenset([8, 7, 10, 9]),
+    #     frozenset(),
+    # )
+    # assert GL_P2._state_is_valid(INITIAL_STATE_P2)
+    # GL_P2.solve_pqueue(INITIAL_STATE_P2)
+
+    # Running my code on Peter Norvig's input
+    NORVIG_INPUT_P2 = """The first floor contains a thulium generator, a thulium-compatible microchip, a plutonium generator, a strontium generator,An elerium generator, 
+    An elerium-compatible microchip, A dilithium generator, A dilithium-compatible microchip.
+    The second floor contains a plutonium-compatible microchip and a strontium-compatible microchip.
+    The third floor contains a promethium generator, a promethium-compatible microchip, a ruthenium generator, and a ruthenium-compatible microchip.
+    The fourth floor contains nothing relevant."""
+    GL = GeneratorLab(NORVIG_INPUT_P2)
+    assert GL._find_nb_generators() == 7
     INITIAL_STATE: GeneratorLab.State = (
-        frozenset([0, 2, 1, 4, 6]),
+        frozenset([0, 2, 1, 4, 6, 12, 11, 13, 14]),
         frozenset([3, 5]),
         frozenset([8, 7, 10, 9]),
         frozenset(),
     )
     assert GL._state_is_valid(INITIAL_STATE)
-    GL.solve_pqueue(INITIAL_STATE)
-
-    # part 2
-    # no example is provided
-    # my actual input
-    GL_P2 = GeneratorLab(INPUT_P2)
-    assert GL_P2._find_nb_generators() == 7
-    INITIAL_STATE_P2: GeneratorLab.State = (
-        frozenset([0, 2, 1, 4, 6, 11, 12, 13, 14]),
-        frozenset([3, 5]),
-        frozenset([8, 7, 10, 9]),
-        frozenset(),
-    )
-    assert GL_P2._state_is_valid(INITIAL_STATE_P2)
-    GL_P2.solve_pqueue(INITIAL_STATE_P2)
+    GL.solve_pqueue(
+        INITIAL_STATE
+    )  # still around 1 second to find the solution, like on my input
