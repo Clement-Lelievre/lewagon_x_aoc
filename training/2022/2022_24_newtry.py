@@ -195,34 +195,8 @@ class BlizzardProblem:
         print("\n")
 
 
-# part 2
-
 if __name__ == "__main__":
     test = BlizzardProblem(INPUT_TEST)
-    # for _ in range(2):
-    #     t.move_blizzard(); t.print_grid()
     assert test.traverse_pqueue() == 18
     actual = BlizzardProblem(INPUT)
     actual.traverse_pqueue()
-    # def find_neighbour_cells(self) -> None:
-    #     self.neighbors = defaultdict(set)
-    #     for (x, y) in self.grid:
-    #         for neigh in (
-    #             (
-    #                 1
-    #                 if x + 1 == self.nb_rows - 1 and y != self.end_square[1]
-    #                 else x + 1,
-    #                 y,
-    #             ),
-    #             (
-    #                 self.nb_rows - 2
-    #                 if x - 1 == 0 and y != self.start_square[1]
-    #                 else x - 1,
-    #                 y,
-    #             ),
-    #             (x, 1 if y + 1 == self.nb_cols - 1 else y + 1),
-    #             (x, self.nb_cols - 2 if y - 1 == 0 else y - 1),
-    #         ):
-    #             if neigh in self.grid:
-    #                 self.neighbors[(x, y)].add(neigh)
-    #     logging.info(f"Neighbours are {self.neighbors}")
