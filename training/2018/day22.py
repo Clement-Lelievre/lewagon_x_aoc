@@ -1,12 +1,12 @@
 import heapq
-from functools import cache
-import numpy as np
 
 
 DEPTH = 5616
 TARGET = (10, 785)
 ENTRANCE = (0, 0)
 
+# DEPTH = 510
+# TARGET = (10, 10)
 erosion_levels = {}
 
 
@@ -63,40 +63,10 @@ print("part 1:", sum(get_all_region_types(TARGET).values()))
 # time spent switching gears and the manhattan distance
 
 
-@cache
-def heuristic(
-    pt1: tuple[int, int],
-    time_spent: int,
-    coeff: float = 5.2,
-    pt2: tuple[int, int] = TARGET,
-) -> int:
-    """The heuristic function for my priority queue. It uses the Manhattan distance to the target location combined
-    with a penalty related to the estimated number of gear switches ahead
-
-    Args:
-        pt1 (tuple[int, int]): X, Y location (x: rows, y: columns)
-        time_spent (int): path cost so far
-        pt2 (tuple[int, int], optional): target X, Y location. Defaults to TARGET.
-
-    Returns:
-        int: the priority value of `pt1`
-    """
-    x1, y1 = pt1
-    x2, y2 = pt2
-    return time_spent + (abs(x1 - x2) + abs(y1 - y2)) * SWITCH_GEAR_TIME / coeff
-
-
-@cache
-def manhattan_dist(pt1, pt2=TARGET):
-    x1, y1 = pt1
-    x2, y2 = pt2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-
 # step 1 : compute all region types as in part 1, with an (arbitrary) margin in case we
 # exceed the target location row or column
 
-MARGIN = 100
+MARGIN = 900
 ALLOWED_EQUIPMENTS = {  # using a frozenset is not mandatory, but it makes the code more readable, as it conveys the intent of having an immutable and unsorted arrays (besides, membership test is O(1))
     0: frozenset((1, 2)),
     1: frozenset((0, 2)),
@@ -112,54 +82,39 @@ TRAVEL_TIME = 1  # from any location to a neighbouring, non-negative location
 SWITCH_GEAR_TIME = 7
 
 # step 2: visit the cave with a best-first search (and a priority queue) using the Manhattan distance as heuristic
-visited = set()  # will store seen states (manhattan_dist, (x, y), time, equipment)
 queue = []
 
-
-queue.append(
-    (heuristic(ENTRANCE, INITIAL_TIME), ENTRANCE, INITIAL_TIME, INITIAL_EQUIPMENT)
-)
+queue.append((INITIAL_TIME, ENTRANCE, INITIAL_EQUIPMENT))
 min_time = float("inf")
+best_times = {}
+
 
 while queue:
-    heuristic_val, current_region, current_time, current_equipment = heapq.heappop(
-        queue
-    )
-    if min_time <= current_time + manhattan_dist(current_region):
-        continue  # I can already discard this state based on time spent
-    if (
-        heuristic_val,
-        current_region,
-        current_time,
-        current_equipment,
-    ) in visited:
-        continue  # discard state if already seen
+    current_time, current_region, current_equipment = heapq.heappop(queue)
     if current_region == TARGET:
-        path_time = current_time + (7 if current_equipment != 1 else 0)
-        if path_time < min_time:
-            min_time = path_time
-            print(f"current best: {min_time}")
+        print(f"part 2: {current_time + (7 if current_equipment != 1 else 0)}")
+        break
+    if (
+        best_times.get((current_region, current_equipment), float("inf"))
+        <= current_time
+    ):
         continue
-    visited.add((heuristic_val, current_region, current_time, current_equipment))
+    state = current_region, current_equipment
+    best_times[state] = current_time
     x, y = current_region
     for x_neigh, y_neigh in ((x - 1, y), (x, y - 1), (x, y + 1), (x + 1, y)):
-        if (x_neigh, y_neigh) not in REGION_TYPES:
+        if x_neigh < 0 or y_neigh<0:
             continue
         neigh_region_type = REGION_TYPES[(x_neigh, y_neigh)]
         for required_equipment in ALLOWED_EQUIPMENTS[neigh_region_type]:
-            new_equipment = required_equipment
             new_time = (
                 current_time
                 + TRAVEL_TIME
-                + (0 if new_equipment == current_equipment else SWITCH_GEAR_TIME)
+                + (0 if required_equipment == current_equipment else SWITCH_GEAR_TIME)
             )
-            new_heuristic_val = heuristic((x_neigh, y_neigh), new_time)
             new_state = (
-                new_heuristic_val,
-                (x_neigh, y_neigh),
                 new_time,
-                new_equipment,
+                (x_neigh, y_neigh),
+                required_equipment,
             )
             heapq.heappush(queue, new_state)
-
-print(f"part 2: {min_time=}")
