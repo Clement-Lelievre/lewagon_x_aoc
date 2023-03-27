@@ -208,7 +208,7 @@ class PartTwoBlizzardProblem(BlizzardProblem):
 
     def traverse_pqueue(
         self, start: tuple[int], dest: tuple[int], blizzard_ind: int = 0
-    ) -> tuple[int]: # yes, Pylint will complain (W0221)
+    ) -> tuple[int]:  # yes, Pylint will complain (W0221)
         queue: PriorityQueue[int, tuple[int], int, int] = PriorityQueue()
         queue.put(
             (0, start, 0, blizzard_ind)
@@ -218,7 +218,12 @@ class PartTwoBlizzardProblem(BlizzardProblem):
         )  # store position (x, y coordinates) and time (index of blizzard positions)
         while not queue.empty():
             _, curr_pos, nb_minutes, blizzard_ind = queue.get()
-            if (curr_pos, blizzard_ind) in seen:
+            if (
+                curr_pos,
+                blizzard_ind,
+            ) in seen:  # initially I did not have this check as I thought that just because I've been there before
+                # doesn't mean I should discard this state, as I should also take into account the blizzard map state. I still think that's true,
+                # but fortunately it still yields the right result this way and is way faster
                 continue
             if curr_pos == dest:
                 break
@@ -249,7 +254,7 @@ if __name__ == "__main__":
     actual_p1 = BlizzardProblem(INPUT)
     actual_p1.traverse_pqueue()
     # cProfile.run('BlizzardProblem(INPUT).traverse_pqueue()', sort=1)
-    
+
     # part 2
     actual_p2 = PartTwoBlizzardProblem(INPUT)
     # obvisouly the below can be refactored
