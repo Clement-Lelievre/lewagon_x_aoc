@@ -30,6 +30,7 @@ def main_p1(text: str) -> int:
 
 # part 2
 
+
 def main_p2(text: str) -> int:
     s = 0
     SEQ = {str(k): str(k) for k in range(1, 10)} | {
