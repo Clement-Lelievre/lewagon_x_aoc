@@ -104,17 +104,23 @@ def main_p2(text: str) -> int:
                         intersection.stop + numbers[0] - numbers[1],
                     )
                 )
-                number_ranges.remove(number_range) # remove the whole range
+                number_ranges.remove(number_range)  # remove the whole range
                 range1, range2 = range(number_range.start, intersection.start), range(
                     intersection.stop, number_range.stop
                 )
                 if range1:
-                    number_ranges.append(range1)  # put back difference; insertion order does not matter
+                    number_ranges.append(
+                        range1
+                    )  # put back difference; insertion order does not matter
                 if range2:
-                    number_ranges.append(range2)  # put back difference; insertion order does not matter
+                    number_ranges.append(
+                        range2
+                    )  # put back difference; insertion order does not matter
     answer = min(
         min(range_[0] for range_ in next_number_ranges),
-        min(range_[0] for range_ in number_ranges), # at the last iteration we haven't yet considered remaining numbers in number_ranges
+        min(
+            range_[0] for range_ in number_ranges
+        ),  # at the last iteration we haven't yet considered remaining numbers in number_ranges
         # the minimum location might be in it
     )
     print(f"part2: {answer}")

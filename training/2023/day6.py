@@ -2,6 +2,7 @@
 """
 from functools import reduce
 from tqdm import tqdm
+
 ACTUAL_DATA = {46: 358, 68: 1054, 98: 1807, 66: 1080}
 TEST_DATA = {7: 9, 15: 40, 30: 200}
 TEST_DATA_P2 = {71530: 940200}

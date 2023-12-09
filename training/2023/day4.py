@@ -27,10 +27,13 @@ def main_p1(text: str) -> int:
     print(f"part 1 {answer=}")
     return answer
 
+
 def main_p2(text: str) -> int:
     lines = [line for line in text.splitlines() if line]
     answer = 0
-    cards = {k:1 for k in range(1, len(lines)+1)} #key: card number, value: nb of them I have
+    cards = {
+        k: 1 for k in range(1, len(lines) + 1)
+    }  # key: card number, value: nb of them I have
     for card_nb, line in enumerate(lines, start=1):
         card_data = line.split(":")[1].strip()
         winning, you_have = card_data.split("|")
@@ -38,11 +41,12 @@ def main_p2(text: str) -> int:
             int(nb) for nb in you_have.split()
         ]
         nb_cards_won = len(set(winning) & set(you_have))
-        for i in range(card_nb+1, card_nb+1+nb_cards_won):
+        for i in range(card_nb + 1, card_nb + 1 + nb_cards_won):
             cards[i] += cards[card_nb]
-    answer = sum(cards.values())   
+    answer = sum(cards.values())
     print(f"part 2 {answer=}")
     return answer
+
 
 if __name__ == "__main__":
     assert main_p1(TEST_DATA) == 13, "should be 13 for the test input p1"
