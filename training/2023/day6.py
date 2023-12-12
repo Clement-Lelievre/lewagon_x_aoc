@@ -1,6 +1,7 @@
 """AoC 2023 day 6: https://adventofcode.com/2023/day/6
 """
 from functools import reduce
+
 from tqdm import tqdm
 
 ACTUAL_DATA = {46: 358, 68: 1054, 98: 1807, 66: 1080}

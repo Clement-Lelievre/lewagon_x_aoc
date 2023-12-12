@@ -3,6 +3,7 @@
 Usage: python day10.py <input_filepath>
 """
 import argparse
+
 import numpy as np
 
 TEST_DATA_1 = """

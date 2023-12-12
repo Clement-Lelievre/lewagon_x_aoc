@@ -3,7 +3,6 @@
 import argparse
 from collections import Counter
 
-
 # Five of a kind, where all five cards have the same label: AAAAA
 # Four of a kind, where four cards have the same label and one card has a different label: AA8AA
 # Full house, where three cards have the same label, and the remaining two cards share a different label: 23332

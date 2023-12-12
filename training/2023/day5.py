@@ -4,7 +4,6 @@ Usage: python day5.py day5_input.txt
 
 import argparse
 
-
 TEST_DATA = """seeds: 79 14 55 13
 
 seed-to-soil map:
