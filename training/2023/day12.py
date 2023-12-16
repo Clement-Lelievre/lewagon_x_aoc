@@ -14,8 +14,11 @@ TEST_DATA = """???.### 1,1,3
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1"""
 
-def main_p1(text:str)-> int:
-    lines = [stripped_line for line in text.splitlines() if (stripped_line := line.strip())]
+
+def main_p1(text: str) -> int:
+    lines = [
+        stripped_line for line in text.splitlines() if (stripped_line := line.strip())
+    ]
     answer = 0
     for line in lines:
         seq, nbs = line.split()
@@ -27,14 +30,12 @@ def main_p1(text:str)-> int:
             new_seq = list(seq)
             for index in comb:
                 new_seq[index] = "#"
-            new_seq = "".join(new_seq).replace('?','.').split('.')
+            new_seq = "".join(new_seq).replace("?", ".").split(".")
             groups_lens = [len(group) for group in new_seq if group]
             if groups_lens == nbs:
                 answer += 1
     print(f"Answer part 1: {answer}")
     return answer
-
-
 
 
 if __name__ == "__main__":

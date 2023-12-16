@@ -99,9 +99,7 @@ class GalaxyObserver:
         initial_row_indices = sorted(set(initial_galaxies_coords[:, 0]))
         row_indices = initial_row_indices.copy()
         for ind in range(len(row_indices) - 1):
-            if (
-                row_delta := initial_row_indices[ind + 1] - initial_row_indices[ind]-1
-            ) :
+            if row_delta := initial_row_indices[ind + 1] - initial_row_indices[ind] - 1:
                 for j in range(ind + 1, len(row_indices)):
                     row_indices[j] += expand_factor * row_delta - row_delta
         map_rows = dict(zip(initial_row_indices, row_indices))
@@ -110,9 +108,7 @@ class GalaxyObserver:
 
         col_indices = initial_col_indices.copy()
         for ind in range(len(col_indices) - 1):
-            if (
-                col_delta := initial_col_indices[ind + 1] - initial_col_indices[ind] -1
-            ) :
+            if col_delta := initial_col_indices[ind + 1] - initial_col_indices[ind] - 1:
                 for j in range(ind + 1, len(col_indices)):
                     col_indices[j] += expand_factor * col_delta - col_delta
         map_cols = dict(zip(initial_col_indices, col_indices))
