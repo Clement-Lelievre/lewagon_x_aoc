@@ -53,7 +53,7 @@ def solve_p1(data: str, min_: int, max_: int) -> int:
     for pair in combinations(a_and_bs, 2):
         a1, b1, x1, vx1 = pair[0]
         a2, b2, x2, vx2 = pair[1]
-        if a1 == a2 or (a1 == a2 and b1 == b2):
+        if a1 == a2:
             continue
         x = (b2 - b1) / (a1 - a2)
         y = a1 * x + b1
