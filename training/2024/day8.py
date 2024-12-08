@@ -28,12 +28,14 @@ T....#....
 ...#......
 ..........
 ....#.....
-..........""".replace("#",".")
+..........""".replace(
+    "#", "."
+)
 
-example_same_line="""
+example_same_line = """
 ..1.1......
 """
-example_same_col=""".......
+example_same_col = """.......
 .......
 .......
 .......
@@ -47,7 +49,11 @@ example_same_col=""".......
 .......
 ......."""
 
-actual_input = """........5..................................e..3...
+example_close = """
+..aa..."""
+
+actual_input = """
+........5..................................e..3...
 .......q...........m................e.............
 ....m.......................................e.....
 .........................................C........
@@ -138,40 +144,28 @@ def solve_p2(inp: str) -> int:
     antinodes: set[tuple[int, int]] = set()
     for r in range(nb_rows):
         for c in range(nb_cols):
-            if (frequency := grid[r, c]) != ".":
+            if (frequency := grid[r, c]) not in ".":
                 freq_data[frequency].append((r, c))
-                antinodes.add((r, c))  # now the antennas are antinodes too
+
     for frequency, locations in freq_data.items():
         for comb in combinations(locations, 2):
             (r1, c1), (r2, c2) = comb
-            (x1, y1), (x2, y2) = (c1, r1), (c2, r2)
-            # compute a,b in f(x) = ax + b ie the line drawn by the two points
-            # ax1+b=y1
-            # ax2+b=y2
-            # a(x1-x2)=y1-y2 <=> a =(y1-y2)/(x1-x2)
-            a = (y1 - y2) / (x1 - x2)  # will raise zerodivision error if two antennas are on the same col (doesnot occur in my input grid)
-            b = y1 - a * x1
-            c = 1
-            while True:
-                proj1 = a * (min(c1, c2) - c * abs(c1 - c2)) + b, min(c1, c2) - c * abs(
-                    c1 - c2
-                )
-                if 0 <= proj1[0] < nb_rows and 0 <= proj1[1] < nb_cols:
-                    antinodes.add(proj1)
-                    c += 1
-                else:
-                    break
-            c = 1
-            while True:
-                proj2 = a * (max(c1, c2) + c * abs(c1 - c2)) + b, max(c1, c2) + c * abs(
-                    c1 - c2
-                )
-                if 0 <= proj2[0] < nb_rows and 0 <= proj2[1] < nb_cols:
-                    antinodes.add(proj2)
-                    c += 1
-                else:
-                    break
-    #print(sorted(antinodes))
+            offset = (r1 - r2, c1 - c2)
+            # I had rounding issues when using a and b coeffs like in part 1, sounder to use the exact offset
+            c = 0
+            while (
+                0 <= (new_r := r1 + c * offset[0]) < nb_rows
+                and 0 <= (new_c := c1 + c * offset[1]) < nb_cols
+            ):
+                antinodes.add((new_r, new_c))
+                c += 1
+            c = 1  # no need to start at 0 here as we already added the antennas in previous while loop
+            while (
+                0 <= (new_r := r1 - c * offset[0]) < nb_rows
+                and 0 <= (new_c := c1 - c * offset[1]) < nb_cols
+            ):
+                antinodes.add((new_r, new_c))
+                c += 1
     print(len(antinodes))
     return len(antinodes)
 
@@ -181,6 +175,7 @@ if __name__ == "__main__":
     solve_p1(actual_input)
     assert solve_p2(example_input_2) == 9
     assert solve_p2(example_input) == 34
-    assert solve_p2(example_same_line)==6
+    assert solve_p2(example_same_line) == 6
+    assert solve_p2(example_close) == 7
     assert solve_p2(example_same_col)==4
-    solve_p2(actual_input)  # 779 too high
+    solve_p2(actual_input)
